@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -11,11 +11,11 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
 <title>Varemil</title>
-<meta name="description" content="Varemil Â· control parental para dos familias, conectado con los PCs">
+<meta name="description" content="Varemil · control parental para dos familias, conectado con los PCs">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
 <style>
   /* Layout: columna tipo app de movil (max 480px); cabecera arriba, contenido,
-     barra de pestaÃ±as abajo. Pantalla de acceso superpuesta cuando no hay sesion. */
+     barra de pestañas abajo. Pantalla de acceso superpuesta cuando no hay sesion. */
   :root{
     --bg:#eef1f7; --app:#ffffff; --app2:#f7f8fc; --fg:#1b2030; --muted:#6b7488;
     --line:#e6e9f2; --accent:#7c3aed; --accent-weak:#f0e9fe;
@@ -246,13 +246,13 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
           <span class="badge" id="bellBadge">0</span>
         </button>
-        <button class="me" id="meBtn" title="Tu cuenta">Â·</button>
+        <button class="me" id="meBtn" title="Tu cuenta">·</button>
       </div>
     </div>
     <div class="subtitle" id="subtitle"></div>
   </header>
 
-  <main><div class="screen" id="screen"><div class="loading">Cargandoâ€¦</div></div></main>
+  <main><div class="screen" id="screen"><div class="loading">Cargando…</div></div></main>
 
   <nav><div class="navbar" id="nav">
     <button data-t="inicio" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>Inicio</button>
@@ -281,9 +281,9 @@
   var CATS = [
     ["adulto","Contenido adulto",true],["apuestas","Apuestas y casino",false],
     ["citas","Citas y ligue",false],["chat","Chats con desconocidos",false],
-    ["pirateria","Descargas y piraterÃ­a",false],["drogas","Drogas",false],
+    ["pirateria","Descargas y piratería",false],["drogas","Drogas",false],
     ["armas","Armas",false],["redes_sociales","Redes sociales",false],
-    ["juegos","Juegos online",false],["video","VÃ­deo y streaming",false],["compras","Compras online",false]
+    ["juegos","Juegos online",false],["video","Vídeo y streaming",false],["compras","Compras online",false]
   ];
 
   var state = { tab:"inicio", selChild:null, familiaId:null, familia:{}, parent:{nombre:"",email:""}, children:[], solicitudes:[] };
@@ -327,9 +327,9 @@
       r.permitido=false;
       var prox=null;
       for(var j=0;j<tramos.length;j++){ if(toMin(tramos[j][0])>m){prox=tramos[j][0];break;} }
-      if(!cuota) r.hasta="maÃ±ana";
+      if(!cuota) r.hasta="mañana";
       else if(prox) r.hasta="las "+prox;
-      else r.hasta="maÃ±ana";
+      else r.hasta="mañana";
     }
     if(dev.estado!=="offline") r.acceso = r.permitido ? "libre" : "bloqueado";
     return r;
@@ -364,23 +364,23 @@
     return '<div class="authcard">'
       +'<div class="authlogo"><svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="13.5" fill="url(#vrmP)"/><rect x="1" y="1" width="46" height="46" rx="12.5" fill="none" stroke="#fff" stroke-opacity=".10"/><rect width="48" height="21" rx="13" fill="#fff" opacity=".07"/><g stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M10.5 15L19 35L29 15L37.5 35" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M22.5 27.6H34.3" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M10.5 15L19 35L29 15L37.5 35" stroke="url(#vrmG)" stroke-width="4.6"/><path d="M22.5 27.6H34.3" stroke="url(#vrmG)" stroke-width="4.6"/></g></svg></div>'
       +'<h1>Varemil</h1><div class="sub">control parental</div>'
-      +(reg?'<label>Tu nombre</label><input class="inp" id="aNombre" placeholder="PapÃ¡ / MamÃ¡">':'')
+      +(reg?'<label>Tu nombre</label><input class="inp" id="aNombre" placeholder="Papá / Mamá">':'')
       +'<label>Correo</label><input class="inp" id="aEmail" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="username">'
-      +'<label>ContraseÃ±a</label><input class="inp" id="aPass" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="'+(reg?'new-password':'current-password')+'">'
+      +'<label>Contraseña</label><input class="inp" id="aPass" type="password" placeholder="••••••••" autocomplete="'+(reg?'new-password':'current-password')+'">'
       +'<button class="btn pri wide" id="aGo">'+(reg?'Crear cuenta':'Entrar')+'</button>'
       +'<div class="autherr" id="aErr"></div>'
-      +'<div class="authlink">'+(reg?'Â¿Ya tienes cuenta? <a id="aSwitch">Entrar</a>':'Â¿Primera vez? <a id="aSwitch">Crear cuenta</a>')+'</div>'
+      +'<div class="authlink">'+(reg?'¿Ya tienes cuenta? <a id="aSwitch">Entrar</a>':'¿Primera vez? <a id="aSwitch">Crear cuenta</a>')+'</div>'
       +'</div>';
   }
   function vJoin(){
     return '<div class="authcard">'
       +'<div class="authlogo"><svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="13.5" fill="url(#vrmP)"/><rect x="1" y="1" width="46" height="46" rx="12.5" fill="none" stroke="#fff" stroke-opacity=".10"/><rect width="48" height="21" rx="13" fill="#fff" opacity=".07"/><g stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M10.5 15L19 35L29 15L37.5 35" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M22.5 27.6H34.3" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M10.5 15L19 35L29 15L37.5 35" stroke="url(#vrmG)" stroke-width="4.6"/><path d="M22.5 27.6H34.3" stroke="url(#vrmG)" stroke-width="4.6"/></g></svg></div>'
       +'<h1>Unirse</h1><div class="sub">a tu familia</div>'
-      +'<label>Tu nombre</label><input class="inp" id="jNombre" placeholder="PapÃ¡ / MamÃ¡">'
-      +'<label>CÃ³digo de familia</label><input class="inp" id="jCodigo" value="'+esc(CODIGO_FAMILIA)+'">'
+      +'<label>Tu nombre</label><input class="inp" id="jNombre" placeholder="Papá / Mamá">'
+      +'<label>Código de familia</label><input class="inp" id="jCodigo" value="'+esc(CODIGO_FAMILIA)+'">'
       +'<button class="btn pri wide" id="jGo">Entrar a la familia</button>'
       +'<div class="autherr" id="jErr"></div>'
-      +'<div class="authlink"><a id="jOut">Cerrar sesiÃ³n</a></div>'
+      +'<div class="authlink"><a id="jOut">Cerrar sesión</a></div>'
       +'</div>';
   }
   function mostrarAuth(vista){
@@ -395,13 +395,13 @@
     el("aGo").onclick=async function(){
       var email=el("aEmail").value.trim(), pass=el("aPass").value, err=el("aErr");
       var nombre = el("aNombre")?el("aNombre").value.trim():"";
-      if(!email||!pass){ err.textContent="Pon correo y contraseÃ±a."; return; }
+      if(!email||!pass){ err.textContent="Pon correo y contraseña."; return; }
       el("aGo").disabled=true; err.textContent="";
       try{
         if(modo==="registro"){
           var r=await sb.auth.signUp({email:email,password:pass,options:{data:{nombre:nombre}}});
           if(r.error) throw r.error;
-          if(!r.data.session){ err.style.color="var(--muted)"; err.textContent="Te hemos enviado un correo. ConfÃ­rmalo y vuelve a entrar."; el("aGo").disabled=false; return; }
+          if(!r.data.session){ err.style.color="var(--muted)"; err.textContent="Te hemos enviado un correo. Confírmalo y vuelve a entrar."; el("aGo").disabled=false; return; }
           sessionStorage.setItem("vrm_nombre", nombre||"");
           await trasLogin();
         } else {
@@ -416,7 +416,7 @@
     el("jOut").onclick=async function(){ await sb.auth.signOut(); mostrarAuth("login"); };
     el("jGo").onclick=async function(){
       var cod=el("jCodigo").value.trim(), nombre=el("jNombre").value.trim()||sessionStorage.getItem("vrm_nombre")||"Padre/Madre", err=el("jErr");
-      if(!cod){ err.textContent="Falta el cÃ³digo."; return; }
+      if(!cod){ err.textContent="Falta el código."; return; }
       el("jGo").disabled=true; err.textContent="";
       try{
         var r=await sb.rpc("unirse_a_familia",{codigo:cod,nombre_padre:nombre});
@@ -426,10 +426,10 @@
     };
   }
   function traducir(m){
-    if(/Invalid login/i.test(m)) return "Correo o contraseÃ±a incorrectos.";
-    if(/already registered/i.test(m)) return "Ese correo ya tiene cuenta. Entra con Ã©l.";
+    if(/Invalid login/i.test(m)) return "Correo o contraseña incorrectos.";
+    if(/already registered/i.test(m)) return "Ese correo ya tiene cuenta. Entra con él.";
     if(/Email not confirmed/i.test(m)) return "Confirma tu correo antes de entrar.";
-    if(/at least 6/i.test(m)) return "La contraseÃ±a debe tener al menos 6 caracteres.";
+    if(/at least 6/i.test(m)) return "La contraseña debe tener al menos 6 caracteres.";
     return m;
   }
 
@@ -442,7 +442,7 @@
     state.familiaId=mem.data[0].familia_id;
     state.parent.nombre=mem.data[0].nombre||"";
     ocultarAuth();
-    el("screen").innerHTML='<div class="loading">Cargandoâ€¦</div>';
+    el("screen").innerHTML='<div class="loading">Cargando…</div>';
     await cargarDatos();
     render();
     // Refresco en segundo plano (nuevas peticiones, estado de los PCs).
@@ -508,7 +508,7 @@
     }catch(e){ toast("No se pudo guardar"); }
   }
   async function enviarComando(c, tipo, args){
-    if(!c.device){ toast(c.nombre+" aÃºn no tiene PC vinculado"); return false; }
+    if(!c.device){ toast(c.nombre+" aún no tiene PC vinculado"); return false; }
     try{
       var r=await sb.from("comandos").insert({familia_id:state.familiaId, dispositivo_id:c.device.id, tipo:tipo, args:args||{}});
       if(r.error) throw r.error;
@@ -528,7 +528,7 @@
   async function denegarSolicitud(sid){
     try{
       await sb.from("solicitudes").update({estado:"denegada", resuelto_at:new Date().toISOString()}).eq("id",sid);
-      toast("PeticiÃ³n denegada");
+      toast("Petición denegada");
       await refrescar();
     }catch(e){ toast("No se pudo"); }
   }
@@ -539,7 +539,7 @@
     var m=Math.floor((Date.now()-new Date(iso).getTime())/60000);
     if(m<1) return "ahora mismo"; if(m<60) return "hace "+m+" min";
     var h=Math.floor(m/60); if(h<24) return "hace "+h+(h>1?" horas":" hora");
-    var d=Math.floor(h/24); return "hace "+d+(d>1?" dÃ­as":" dÃ­a");
+    var d=Math.floor(h/24); return "hace "+d+(d>1?" días":" día");
   }
 
   function vPeticiones(){
@@ -549,7 +549,7 @@
       var nombre=s.hijo?s.hijo.nombre:"Tu hijo", color=s.hijo?s.hijo.color:"#7c3aed", ini=s.hijo?s.hijo.inicial:"?";
       h+='<div class="card ask child-card"><div class="child-head">'
         +'<div class="avatar" style="background:'+esc(color)+'">'+esc(ini)+'</div>'
-        +'<div class="meta"><div class="n">'+esc(nombre)+' pide mÃ¡s tiempo</div>'
+        +'<div class="meta"><div class="n">'+esc(nombre)+' pide más tiempo</div>'
         +'<div class="d">'+esc(haceTexto(s.creado_at))+'</div></div>'
         +'<span class="chip warn"><span class="dot"></span>Nuevo</span></div>'
         +'<div class="actions">'
@@ -562,21 +562,21 @@
   }
 
   function vInicio(){
-    var h='<h3 class="title">Hola'+(state.parent.nombre?", "+esc(state.parent.nombre):"")+'</h3><p class="lead">AsÃ­ va hoy el tiempo de pantalla.</p>';
+    var h='<h3 class="title">Hola'+(state.parent.nombre?", "+esc(state.parent.nombre):"")+'</h3><p class="lead">Así va hoy el tiempo de pantalla.</p>';
     h+=vPeticiones();
-    if(!state.children.length){ return h+emptyCard("No hay hijos todavÃ­a","AÃ±ade uno desde Ajustes."); }
+    if(!state.children.length){ return h+emptyCard("No hay hijos todavía","Añade uno desde Ajustes."); }
     state.children.forEach(function(c){
       var dev=c.device?c.device.estado:"sinpc";
-      var chip = dev==="online"?'<span class="chip ok"><span class="dot"></span>En lÃ­nea</span>'
+      var chip = dev==="online"?'<span class="chip ok"><span class="dot"></span>En línea</span>'
                : dev==="locked"?'<span class="chip crit"><span class="dot"></span>Bloqueado</span>'
                : dev==="offline"?'<span class="chip off"><span class="dot"></span>Apagado</span>'
                : '<span class="chip off"><span class="dot"></span>Sin PC</span>';
       var estado;
       if(!c.device) estado='<div class="state-line">Vincula su PC desde <b>Ajustes</b>.</div>';
       else if(c.acceso==="libre") estado='<div class="state-line">Ahora: <b>libre hasta '+esc(c.hasta||"")+'</b></div>';
-      else estado='<div class="state-line">Ahora: <b>bloqueado</b>'+(c.hasta?" Â· vuelve "+esc(c.hasta):"")+'</div>';
-      estado+='<div class="state-line">'+fmt(Math.max(0,c.hoy.limite-c.hoy.usados))+' del lÃ­mite diario';
-      estado+= c.hoy.limite?"":' (sin lÃ­mite)'; estado+='</div>';
+      else estado='<div class="state-line">Ahora: <b>bloqueado</b>'+(c.hasta?" · vuelve "+esc(c.hasta):"")+'</div>';
+      estado+='<div class="state-line">'+fmt(Math.max(0,c.hoy.limite-c.hoy.usados))+' del límite diario';
+      estado+= c.hoy.limite?"":' (sin límite)'; estado+='</div>';
 
       h+='<div class="card child-card"><div class="child-head">'
         +'<div class="avatar" style="background:'+esc(c.color)+'">'+esc(c.inicial)+'</div>'
@@ -600,7 +600,7 @@
     return '<div class="ring-wrap"><svg width="88" height="88" viewBox="0 0 88 88">'
       +'<circle cx="44" cy="44" r="'+r+'" fill="none" stroke="var(--ring-track)" stroke-width="8"/>'
       +'<circle cx="44" cy="44" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 44 44)"/></svg>'
-      +'<div class="lbl"><b>'+fmt(usados)+'</b><span>de '+(limite?fmt(limite):"âˆž")+'</span></div></div>';
+      +'<div class="lbl"><b>'+fmt(usados)+'</b><span>de '+(limite?fmt(limite):"∞")+'</span></div></div>';
   }
 
   function childSeg(){
@@ -613,31 +613,31 @@
 
   function vHorarios(){
     var c=child(state.selChild);
-    var h='<h3 class="title">Horarios</h3><p class="lead">CuÃ¡ndo puede usar el ordenador.</p>'+childSeg()+'<div class="card">';
+    var h='<h3 class="title">Horarios</h3><p class="lead">Cuándo puede usar el ordenador.</p>'+childSeg()+'<div class="card">';
     dias.forEach(function(d){
       var tr=c.horario[d]||[]; var activo=tr.length>0; var blocks="";
       tr.forEach(function(t){ var a=toMin(t[0]),b=toMin(t[1]); blocks+='<span class="blk" style="left:'+(a/1440*100)+'%;width:'+((b-a)/1440*100)+'%"></span>'; });
-      var chips=activo?tr.map(function(t){return '<span class="tramo">'+esc(t[0])+'â€“'+esc(t[1])+'</span>';}).join(""):'<span class="tramo none">Bloqueado todo el dÃ­a</span>';
+      var chips=activo?tr.map(function(t){return '<span class="tramo">'+esc(t[0])+'–'+esc(t[1])+'</span>';}).join(""):'<span class="tramo none">Bloqueado todo el día</span>';
       h+='<div class="day"><div class="day-top"><span class="day-name">'+d+'</span><button class="sw '+(activo?"on":"")+'" data-day="'+d+'"></button></div><div class="timeline">'+blocks+'</div><div class="tramos">'+chips+'</div></div>';
     });
-    h+='</div><div class="note">'+icon("info")+'<div>El interruptor abre o cierra un dÃ­a entero. Al guardar, el cambio llega al PC en la prÃ³xima sincronizaciÃ³n.</div></div>';
+    h+='</div><div class="note">'+icon("info")+'<div>El interruptor abre o cierra un día entero. Al guardar, el cambio llega al PC en la próxima sincronización.</div></div>';
     return h;
   }
 
   function vActividad(){
     var c=child(state.selChild);
-    var h='<h3 class="title">Actividad</h3><p class="lead">QuÃ© usa y quÃ© visita.</p>'+childSeg();
+    var h='<h3 class="title">Actividad</h3><p class="lead">Qué usa y qué visita.</p>'+childSeg();
     var tieneApps=c.apps&&c.apps.length, tieneWeb=c.webs&&c.webs.length;
     var totSemana=0; c.semana.forEach(function(x){totSemana+=x;});
     if(!tieneApps && !tieneWeb && totSemana===0){
-      return h+emptyCard("AÃºn no hay actividad", c.device?"Cuando "+c.nombre+" use el PC, verÃ¡s aquÃ­ su tiempo y sus webs.":"Vincula su PC desde Ajustes para empezar a recibir datos.");
+      return h+emptyCard("Aún no hay actividad", c.device?"Cuando "+c.nombre+" use el PC, verás aquí su tiempo y sus webs.":"Vincula su PC desde Ajustes para empezar a recibir datos.");
     }
     var total=0; c.apps.forEach(function(a){total+=a[1];});
     var maxApp=1; c.apps.forEach(function(a){if(a[1]>maxApp)maxApp=a[1];});
     var maxWeek=1; c.semana.forEach(function(m){if(m>maxWeek)maxWeek=m;}); if(c.hoy.limite>maxWeek)maxWeek=c.hoy.limite;
 
     h+='<div class="kpis"><div class="kpi"><div class="v">'+fmt(total)+'</div><div class="k">Hoy en total</div></div>'
-      +'<div class="kpi"><div class="v">'+esc(tieneApps?c.apps[0][0]:"â€”")+'</div><div class="k">App mÃ¡s usada</div></div>'
+      +'<div class="kpi"><div class="v">'+esc(tieneApps?c.apps[0][0]:"—")+'</div><div class="k">App más usada</div></div>'
       +'<div class="kpi"><div class="v">'+(c.webs?c.webs.length:0)+'</div><div class="k">Webs hoy</div></div></div>';
 
     h+='<div class="card"><h2 class="sec" style="margin-top:0">Esta semana</h2><div class="weekchart">';
@@ -649,7 +649,7 @@
     else h+='<div class="empty" style="padding:12px">Sin datos hoy</div>';
     h+='</div>';
 
-    h+='<div class="card"><h2 class="sec" style="margin-top:0">PÃ¡ginas visitadas hoy</h2>';
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Páginas visitadas hoy</h2>';
     if(tieneWeb) c.webs.forEach(function(w){ h+='<div class="web"><div class="fav">'+esc(String(w[0]).charAt(0).toUpperCase())+'</div><div class="u">'+esc(w[0])+'</div><div class="c">'+esc(w[1])+' visitas</div></div>'; });
     else h+='<div class="empty" style="padding:12px">Sin datos hoy</div>';
     h+='</div>';
@@ -658,17 +658,17 @@
 
   function vFiltro(){
     var c=child(state.selChild);
-    var h='<h3 class="title">Filtro web</h3><p class="lead">QuÃ© puede abrir, segÃºn su edad.</p>'+childSeg();
+    var h='<h3 class="title">Filtro web</h3><p class="lead">Qué puede abrir, según su edad.</p>'+childSeg();
     h+='<div class="card"><h2 class="sec" style="margin-top:0">Nivel</h2><div class="seglevel" id="nivel">'
-      +'<button data-nivel="nino" class="'+(c.filtro.nivel==="nino"?"on":"")+'">NiÃ±o</button>'
+      +'<button data-nivel="nino" class="'+(c.filtro.nivel==="nino"?"on":"")+'">Niño</button>'
       +'<button data-nivel="adolescente" class="'+(c.filtro.nivel==="adolescente"?"on":"")+'">Adolescente</button>'
       +'<button data-nivel="personalizado" class="'+(c.filtro.nivel==="personalizado"?"on":"")+'">A medida</button></div></div>';
-    h+='<div class="card"><h2 class="sec" style="margin-top:0">CategorÃ­as bloqueadas</h2>';
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Categorías bloqueadas</h2>';
     CATS.forEach(function(cat){ var on=!!c.filtro.cats[cat[0]], lk=cat[2];
       h+='<div class="row"><div class="txt"><div class="t">'+esc(cat[1])+'</div>'+(lk?'<div class="s">Siempre bloqueado</div>':'')+'</div><button class="sw '+(on?"on":"")+(lk?" locked":"")+'" data-cat="'+cat[0]+'" '+(lk?"disabled":"")+'></button></div>'; });
     h+='</div>';
-    h+='<div class="card"><h2 class="sec" style="margin-top:0">Buscadores y vÃ­deo</h2>'
-      +'<div class="row"><div class="txt"><div class="t">BÃºsqueda segura</div><div class="s">Siempre activada</div></div><button class="sw on locked" disabled></button></div>'
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Buscadores y vídeo</h2>'
+      +'<div class="row"><div class="txt"><div class="t">Búsqueda segura</div><div class="s">Siempre activada</div></div><button class="sw on locked" disabled></button></div>'
       +'<div class="row" style="border-top:0"><div class="txt"><div class="t">YouTube restringido</div></div></div>'
       +'<div class="seglevel" id="yt"><button data-yt="estricto" class="'+(c.filtro.youtube==="estricto"?"on":"")+'">Estricto</button><button data-yt="moderado" class="'+(c.filtro.youtube==="moderado"?"on":"")+'">Moderado</button><button data-yt="ninguno" class="'+(c.filtro.youtube==="ninguno"?"on":"")+'">Ninguno</button></div></div>';
     h+='<div class="note">'+icon("info")+'<div>Los cambios se guardan y llegan al PC en unos minutos. El contenido adulto se bloquea siempre, a nivel de red.</div></div>';
@@ -683,22 +683,22 @@
       +'<button class="btn" data-act="logout">Salir</button></div></div>';
 
     h+='<div class="card"><h2 class="sec" style="margin-top:0">Invitar al otro progenitor</h2>'
-      +'<div class="s" style="color:var(--muted);font-size:12.5px">Que instale la app, cree su cuenta y use este cÃ³digo de familia:</div>'
+      +'<div class="s" style="color:var(--muted);font-size:12.5px">Que instale la app, cree su cuenta y use este código de familia:</div>'
       +'<div class="codebox">'+esc(state.familiaId||"")+'</div>'
-      +'<button class="btn wide" data-act="copiarcodigo" style="margin-top:10px">Copiar cÃ³digo</button></div>';
+      +'<button class="btn wide" data-act="copiarcodigo" style="margin-top:10px">Copiar código</button></div>';
 
     h+='<div class="card"><h2 class="sec" style="margin-top:0">Hijos y dispositivos</h2>';
     state.children.forEach(function(c){
       var dev=c.device?c.device.estado:"sinpc";
-      var chip=dev==="online"?'<span class="chip ok"><span class="dot"></span>En lÃ­nea</span>':dev==="locked"?'<span class="chip crit"><span class="dot"></span>Bloqueado</span>':dev==="offline"?'<span class="chip off"><span class="dot"></span>Apagado</span>':'<span class="chip off">Sin PC</span>';
+      var chip=dev==="online"?'<span class="chip ok"><span class="dot"></span>En línea</span>':dev==="locked"?'<span class="chip crit"><span class="dot"></span>Bloqueado</span>':dev==="offline"?'<span class="chip off"><span class="dot"></span>Apagado</span>':'<span class="chip off">Sin PC</span>';
       var sub=c.device?c.device.nombre:"Sin dispositivo";
-      if(c.device&&c.device.ultimo_visto) sub+=" Â· "+haceTexto(c.device.ultimo_visto);
+      if(c.device&&c.device.ultimo_visto) sub+=" · "+haceTexto(c.device.ultimo_visto);
       h+='<div class="row"><div class="avatar" style="width:34px;height:34px;border-radius:10px;font-size:14px;background:'+esc(c.color)+'">'+esc(c.inicial)+'</div>'
-        +'<div class="txt"><div class="t">'+esc(c.nombre)+' Â· '+c.edad+' aÃ±os</div><div class="s">'+esc(sub)+'</div></div>'
+        +'<div class="txt"><div class="t">'+esc(c.nombre)+' · '+c.edad+' años</div><div class="s">'+esc(sub)+'</div></div>'
         +(c.device?chip:'<button class="btn" data-act="addpc" data-c="'+c.id+'">Vincular PC</button>')+'</div>';
     });
     h+='</div>';
-    h+='<div class="note">'+icon("info")+'<div>Varemil Â· control parental. Al vincular un PC te damos un cÃ³digo para pegarlo al instalar el programa en ese ordenador.</div></div>';
+    h+='<div class="note">'+icon("info")+'<div>Varemil · control parental. Al vincular un PC te damos un código para pegarlo al instalar el programa en ese ordenador.</div></div>';
     return h;
   }
 
@@ -707,12 +707,12 @@
   function render(){
     el("screen").innerHTML=screens[state.tab]();
     var n=el("nav"); [].forEach.call(n.children,function(b){ b.classList.toggle("on",b.getAttribute("data-t")===state.tab); });
-    el("meBtn").textContent=(state.parent.nombre||state.parent.email||"Â·").charAt(0).toUpperCase();
+    el("meBtn").textContent=(state.parent.nombre||state.parent.email||"·").charAt(0).toUpperCase();
     var nped=state.solicitudes?state.solicitudes.length:0;
     el("bellBtn").hidden = nped===0;
     el("bellBadge").textContent = nped;
     var bloq=0; state.children.forEach(function(c){ if(c.acceso==="bloqueado")bloq++; });
-    el("subtitle").textContent = state.children.length?(state.children.length+" "+(state.children.length>1?"hijos":"hijo")+" Â· "+(bloq?bloq+" bloqueado"+(bloq>1?"s":""):"todo en orden")):"";
+    el("subtitle").textContent = state.children.length?(state.children.length+" "+(state.children.length>1?"hijos":"hijo")+" · "+(bloq?bloq+" bloqueado"+(bloq>1?"s":""):"todo en orden")):"";
   }
 
   async function refrescar(){ await cargarDatos(); render(); }
@@ -764,10 +764,10 @@
   }
   function mostrarToken(nombre, token){
     var a=el("auth"); a.hidden=false;
-    a.innerHTML='<div class="authcard"><h1 style="font-size:20px">PC de '+esc(nombre)+'</h1><div class="sub">cÃ³digo de vinculaciÃ³n</div>'
-      +'<p class="lead" style="text-align:center">Pega este cÃ³digo al instalar Varemil en ese ordenador:</p>'
+    a.innerHTML='<div class="authcard"><h1 style="font-size:20px">PC de '+esc(nombre)+'</h1><div class="sub">código de vinculación</div>'
+      +'<p class="lead" style="text-align:center">Pega este código al instalar Varemil en ese ordenador:</p>'
       +'<div class="codebox">'+esc(token)+'</div>'
-      +'<button class="btn pri wide" id="tkCopy">Copiar cÃ³digo</button>'
+      +'<button class="btn pri wide" id="tkCopy">Copiar código</button>'
       +'<div class="authlink"><a id="tkClose">Cerrar</a></div></div>';
     el("tkCopy").onclick=function(){ copiar(token); };
     el("tkClose").onclick=function(){ a.hidden=true; };
