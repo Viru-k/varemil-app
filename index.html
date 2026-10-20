@@ -128,6 +128,11 @@
   .tramo{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-weak);
     border-radius:8px;padding:3px 9px;font-variant-numeric:tabular-nums}
   .tramo.none{color:var(--muted);background:var(--app2)}
+  .tramoedit{display:flex;align-items:center;gap:8px;margin:7px 0}
+  .tinp{flex:1;min-width:0;font:inherit;font-size:15px;background:var(--app2);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:10px 10px;font-variant-numeric:tabular-nums}
+  .dash{color:var(--muted);flex:none}
+  .tdel{border:0;background:var(--crit-weak);color:var(--crit);border-radius:10px;width:38px;height:38px;cursor:pointer;flex:none;font-size:14px}
+  .addt{margin-top:4px}
 
   .sw{width:42px;height:25px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;flex:none;
     border:0;padding:0;transition:background .18s ease}
@@ -266,7 +271,7 @@
 
 <div class="auth" id="auth"><div class="loading" style="color:var(--muted)">Cargando Varemil…</div></div>
 <div class="toast" id="toast"></div>
-<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v11</div>
+<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v12</div>
 
 <script src="supabase.min.js"></script>
 <script>
@@ -646,14 +651,26 @@
 
   function vHorarios(){
     var c=child(state.selChild);
-    var h='<h3 class="title">Horarios</h3><p class="lead">Cuándo puede usar el ordenador.</p>'+childSeg()+'<div class="card">';
+    var h='<h3 class="title">Horarios</h3><p class="lead">Cuándo puede usar el ordenador '+esc(c.nombre)+'.</p>'+childSeg()+'<div class="card">';
     dias.forEach(function(d){
-      var tr=c.horario[d]||[]; var activo=tr.length>0; var blocks="";
-      tr.forEach(function(t){ var a=toMin(t[0]),b=toMin(t[1]); blocks+='<span class="blk" style="left:'+(a/1440*100)+'%;width:'+((b-a)/1440*100)+'%"></span>'; });
-      var chips=activo?tr.map(function(t){return '<span class="tramo">'+esc(t[0])+'–'+esc(t[1])+'</span>';}).join(""):'<span class="tramo none">Bloqueado todo el día</span>';
-      h+='<div class="day"><div class="day-top"><span class="day-name">'+d+'</span><button class="sw '+(activo?"on":"")+'" data-day="'+d+'"></button></div><div class="timeline">'+blocks+'</div><div class="tramos">'+chips+'</div></div>';
+      var tr=c.horario[d]||[]; var activo=tr.length>0;
+      h+='<div class="day"><div class="day-top"><span class="day-name">'+d+'</span><button class="sw '+(activo?"on":"")+'" data-day="'+d+'"></button></div>';
+      if(activo){
+        tr.forEach(function(t,i){
+          h+='<div class="tramoedit">'
+            +'<input type="time" class="tinp" value="'+esc(t[0])+'" data-t="hora" data-day="'+d+'" data-idx="'+i+'" data-pos="0">'
+            +'<span class="dash">–</span>'
+            +'<input type="time" class="tinp" value="'+esc(t[1])+'" data-t="hora" data-day="'+d+'" data-idx="'+i+'" data-pos="1">'
+            +'<button class="tdel" data-delt="1" data-day="'+d+'" data-idx="'+i+'" aria-label="Quitar">✕</button>'
+            +'</div>';
+        });
+        h+='<button class="btn addt" data-addt="1" data-day="'+d+'">+ Añadir tramo</button>';
+      } else {
+        h+='<div class="tramos"><span class="tramo none">Cerrado todo el día</span></div>';
+      }
+      h+='</div>';
     });
-    h+='</div><div class="note">'+icon("info")+'<div>El interruptor abre o cierra un día entero. Al guardar, el cambio llega al PC en la próxima sincronización.</div></div>';
+    h+='</div><div class="note">'+icon("info")+'<div>Abre o cierra cada día con el interruptor, y ajusta las horas con los selectores. Se guarda solo y llega al PC en unos minutos.</div></div>';
     return h;
   }
 
@@ -759,7 +776,14 @@
 
   el("screen").addEventListener("click",async function(e){
     var b=e.target.closest("button,[data-day],[data-cat]"); if(!b)return;
+    if(b.tagName==="INPUT") return;  // los selectores de hora los maneja 'change'
     if(b.hasAttribute("data-child")){ state.selChild=b.getAttribute("data-child"); render(); return; }
+    if(b.hasAttribute("data-delt")){ var cd=child(state.selChild),dd=b.getAttribute("data-day"),ix=parseInt(b.getAttribute("data-idx"),10);
+      if(cd.horario[dd]){ cd.horario[dd].splice(ix,1); } render(); await guardarHijo(cd); toast("Tramo quitado"); return;
+    }
+    if(b.hasAttribute("data-addt")){ var ca=child(state.selChild),da=b.getAttribute("data-day");
+      if(!ca.horario[da]) ca.horario[da]=[]; ca.horario[da].push(["16:00","20:00"]); render(); await guardarHijo(ca); toast("Tramo añadido"); return;
+    }
     var act=b.getAttribute("data-act");
     if(act){
       if(act==="aprobar"){ await aprobarSolicitud(b.getAttribute("data-s"), b.getAttribute("data-d"), parseInt(b.getAttribute("data-min"),10)); return; }
@@ -787,6 +811,17 @@
       render(); await guardarHijo(c4); toast("Nivel: "+lvl); return;
     }
     if(b.hasAttribute("data-yt")){ var c5=child(state.selChild); c5.filtro.youtube=b.getAttribute("data-yt"); render(); await guardarHijo(c5); toast("YouTube: "+b.getAttribute("data-yt")); return; }
+  });
+
+  el("screen").addEventListener("change", async function(e){
+    var i=e.target;
+    if(!i || !i.getAttribute || i.getAttribute("data-t")!=="hora") return;
+    var c=child(state.selChild), d=i.getAttribute("data-day"), idx=parseInt(i.getAttribute("data-idx"),10), pos=parseInt(i.getAttribute("data-pos"),10);
+    if(c.horario[d] && c.horario[d][idx] && i.value){
+      c.horario[d][idx][pos]=i.value;
+      await guardarHijo(c);
+      toast("Horario guardado");
+    }
   });
 
   async function vincularPC(c){
