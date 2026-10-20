@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7c3aed">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Varemil">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Varemil</title>
+<meta name="description" content="Varemil · control parental para dos familias, conectado con los PCs">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: columna tipo app de movil (max 480px); cabecera arriba, contenido,
+     barra de pestañas abajo. Pantalla de acceso superpuesta cuando no hay sesion. */
+  :root{
+    --bg:#eef1f7; --app:#ffffff; --app2:#f7f8fc; --fg:#1b2030; --muted:#6b7488;
+    --line:#e6e9f2; --accent:#7c3aed; --accent-weak:#f0e9fe;
+    --ok:#15935a; --ok-weak:#e3f3ea; --warn:#b4720a; --warn-weak:#fbf0da;
+    --crit:#d12f3f; --crit-weak:#fbe5e8; --ring-track:#e8eaf2;
+    --shadow:0 1px 2px rgba(20,24,40,.05), 0 8px 24px rgba(20,24,40,.07);
+    --r:18px; --r-sm:12px;
+    --display:"Sora","Segoe UI",system-ui,sans-serif;
+    --body:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --bg:#070a12; --app:#0f1422; --app2:#141a2b; --fg:#eaedf6; --muted:#98a1b8;
+    --line:#212a40; --accent:#a78bfa; --accent-weak:#271a44;
+    --ok:#4cc38a; --ok-weak:#12271d; --warn:#e0a648; --warn-weak:#2a2112;
+    --crit:#ff6b7a; --crit-weak:#2c1620; --ring-track:#222a40;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.45); color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#070a12; --app:#0f1422; --app2:#141a2b; --fg:#eaedf6; --muted:#98a1b8;
+    --line:#212a40; --accent:#a78bfa; --accent-weak:#271a44;
+    --ok:#4cc38a; --ok-weak:#12271d; --warn:#e0a648; --warn-weak:#2a2112;
+    --crit:#ff6b7a; --crit-weak:#2c1620; --ring-track:#222a40;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.45); color-scheme:dark;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);
+    font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+
+  .wrap{max-width:480px;margin:0 auto;min-height:100%;background:var(--app);
+    display:flex;flex-direction:column;position:relative;box-shadow:var(--shadow)}
+
+  header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--app);
+    border-bottom:1px solid var(--line);padding:13px 18px 12px}
+  .brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .logo{width:38px;height:38px;flex:none;filter:drop-shadow(0 3px 6px rgba(109,40,217,.28))}
+  .logo svg{width:100%;height:100%;display:block}
+  .brand .bt b{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.02em;display:block;line-height:1}
+  .brand .bt span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .me{width:34px;height:34px;border-radius:50%;background:var(--accent-weak);color:var(--accent);border:0;cursor:pointer;
+    font-family:var(--display);font-weight:700;font-size:14px}
+  .bell{position:relative;width:34px;height:34px;border-radius:50%;background:var(--app2);border:1px solid var(--line);
+    color:var(--fg);cursor:pointer;display:grid;place-items:center}
+  .bell svg{width:18px;height:18px}
+  .badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--crit);
+    color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;padding:0 4px;border:2px solid var(--app)}
+  .ask{border:1px solid var(--accent);background:var(--accent-weak)}
+  .ask .child-head .meta .n{color:var(--fg)}
+  .subtitle{color:var(--muted);font-size:12.5px;margin-top:8px}
+
+  main{flex:1;padding:16px 16px 96px}
+  .screen{display:flex;flex-direction:column;gap:14px}
+  h2.sec{font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--muted);margin:4px 2px -2px}
+  h3.title{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01em;margin:2px 2px 0}
+  .lead{color:var(--muted);font-size:13px;margin:0 2px}
+
+  .card{background:var(--app);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+  .child-card{display:flex;flex-direction:column;gap:14px}
+  .child-head{display:flex;align-items:center;gap:12px}
+  .avatar{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;
+    font-family:var(--display);font-weight:700;font-size:19px;flex:none}
+  .child-head .meta{flex:1;min-width:0}
+  .child-head .meta .n{font-family:var(--display);font-weight:600;font-size:17px}
+  .child-head .meta .d{color:var(--muted);font-size:12.5px;margin-top:1px}
+
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+    padding:4px 10px;border-radius:999px;white-space:nowrap}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .chip.ok{color:var(--ok);background:var(--ok-weak)}
+  .chip.crit{color:var(--crit);background:var(--crit-weak)}
+  .chip.off{color:var(--muted);background:var(--app2)}
+  .chip.warn{color:var(--warn);background:var(--warn-weak)}
+
+  .child-body{display:flex;align-items:center;gap:16px}
+  .ring-wrap{position:relative;width:88px;height:88px;flex:none}
+  .ring-wrap .lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring-wrap .lbl b{font-family:var(--display);font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+  .ring-wrap .lbl span{font-size:10.5px;color:var(--muted)}
+  .child-state{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .state-line{font-size:13.5px;color:var(--muted)}
+  .state-line b{color:var(--fg);font-weight:600}
+
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{font:inherit;font-weight:600;font-size:13px;border-radius:11px;border:1px solid var(--line);
+    background:var(--app2);color:var(--fg);padding:9px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+    transition:transform .05s ease}
+  .btn:active{transform:scale(.97)}
+  .btn.pri{background:var(--accent);color:#fff;border-color:transparent}
+  .btn.danger{background:var(--crit-weak);color:var(--crit);border-color:transparent}
+  .btn.block{flex:1;justify-content:center}
+  .btn.wide{width:100%;justify-content:center;padding:12px}
+  .btn svg{width:15px;height:15px}
+
+  .seg{display:flex;gap:6px;background:var(--app2);border:1px solid var(--line);border-radius:14px;padding:4px}
+  .seg button{flex:1;font:inherit;font-weight:600;font-size:13.5px;border:0;background:transparent;color:var(--muted);
+    padding:8px;border-radius:10px;cursor:pointer}
+  .seg button.on{background:var(--app);color:var(--fg);box-shadow:var(--shadow)}
+
+  .day{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+  .day:first-child{border-top:0;padding-top:0}
+  .day-top{display:flex;align-items:center;justify-content:space-between}
+  .day-name{font-weight:600;font-size:14px;text-transform:capitalize}
+  .timeline{position:relative;height:16px;border-radius:8px;background:var(--app2);overflow:hidden}
+  .timeline .blk{position:absolute;top:0;bottom:0;background:var(--accent);opacity:.85;border-radius:6px}
+  .tramos{display:flex;gap:6px;flex-wrap:wrap}
+  .tramo{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-weak);
+    border-radius:8px;padding:3px 9px;font-variant-numeric:tabular-nums}
+  .tramo.none{color:var(--muted);background:var(--app2)}
+
+  .sw{width:42px;height:25px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;flex:none;
+    border:0;padding:0;transition:background .18s ease}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;
+    transition:left .18s ease;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .sw.on{background:var(--accent)} .sw.on::after{left:20px}
+  .sw.locked{opacity:.55;cursor:not-allowed}
+
+  .row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .row .txt{flex:1;min-width:0}
+  .row .txt .t{font-weight:600;font-size:14px}
+  .row .txt .s{color:var(--muted);font-size:12.5px;margin-top:1px}
+
+  .barline{display:flex;align-items:center;gap:10px;padding:9px 0}
+  .barline .ic{width:30px;height:30px;border-radius:9px;background:var(--accent-weak);color:var(--accent);
+    display:grid;place-items:center;font-weight:700;font-family:var(--display);font-size:13px;flex:none}
+  .barline .bwrap{flex:1;min-width:0}
+  .barline .bwrap .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .barline .bwrap .top .v{color:var(--muted);font-variant-numeric:tabular-nums}
+  .track{height:8px;border-radius:6px;background:var(--app2);overflow:hidden}
+  .track .fill{height:100%;border-radius:6px;background:var(--accent)}
+
+  .weekchart{display:flex;align-items:flex-end;justify-content:space-between;gap:7px;height:120px;padding-top:6px}
+  .wbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .wbar .col{width:100%;max-width:26px;background:var(--accent-weak);border-radius:7px 7px 4px 4px;position:relative;height:100%}
+  .wbar .col .f{position:absolute;left:0;right:0;bottom:0;background:var(--accent);border-radius:7px 7px 4px 4px}
+  .wbar.today .col .f{background:var(--ok)}
+  .wbar .dl{font-size:11px;color:var(--muted);font-weight:600}
+
+  .kpis{display:flex;gap:10px}
+  .kpi{flex:1;background:var(--app2);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;min-width:0}
+  .kpi .v{font-family:var(--display);font-weight:700;font-size:19px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .kpi .k{color:var(--muted);font-size:11.5px;margin-top:2px}
+
+  .web{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+  .web:first-child{border-top:0}
+  .web .fav{width:26px;height:26px;border-radius:7px;background:var(--app2);display:grid;place-items:center;
+    font-size:12px;font-weight:700;color:var(--muted);flex:none}
+  .web .u{flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .web .c{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+
+  .empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 10px}
+  .empty svg{width:34px;height:34px;color:var(--line);margin-bottom:8px}
+
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;pointer-events:none}
+  .navbar{width:100%;max-width:480px;background:var(--app);border-top:1px solid var(--line);
+    display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));pointer-events:auto}
+  .navbar button{flex:1;background:none;border:0;cursor:pointer;color:var(--muted);font:inherit;
+    display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;font-size:10.5px;font-weight:600}
+  .navbar button svg{width:22px;height:22px}
+  .navbar button.on{color:var(--accent)}
+
+  .seglevel{display:flex;gap:6px;background:var(--app2);border:1px solid var(--line);border-radius:12px;padding:4px}
+  .seglevel button{flex:1;font:inherit;font-weight:600;font-size:12.5px;border:0;background:transparent;color:var(--muted);
+    padding:8px 4px;border-radius:9px;cursor:pointer}
+  .seglevel button.on{background:var(--accent);color:#fff}
+
+  .addrow{display:flex;gap:8px;margin-top:10px}
+  .inp{flex:1;min-width:0;font:inherit;background:var(--app2);border:1px solid var(--line);
+    color:var(--fg);border-radius:10px;padding:10px 12px}
+  .inp::placeholder{color:var(--muted)}
+
+  .note{font-size:12px;color:var(--muted);background:var(--app2);border:1px solid var(--line);
+    border-radius:var(--r-sm);padding:11px 13px;display:flex;gap:9px;align-items:flex-start}
+  .note svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--accent)}
+  .codebox{font-family:var(--display);font-weight:600;font-size:13px;background:var(--app2);border:1px dashed var(--line);
+    border-radius:10px;padding:10px 12px;word-break:break-all;margin-top:8px;color:var(--fg)}
+
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));
+    background:var(--fg);color:var(--app);font-weight:600;font-size:13px;padding:11px 16px;border-radius:12px;
+    box-shadow:var(--shadow);z-index:50;opacity:0;transition:opacity .2s ease, transform .2s ease;pointer-events:none;max-width:90%}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+  /* Pantalla de acceso */
+  .auth{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:22px}
+  .authcard{width:100%;max-width:380px;background:var(--app);border:1px solid var(--line);border-radius:22px;
+    box-shadow:var(--shadow);padding:26px 22px}
+  .authlogo{width:62px;height:62px;margin:0 auto 14px;filter:drop-shadow(0 6px 14px rgba(109,40,217,.33))}
+  .authlogo svg{width:100%;height:100%;display:block}
+  .authcard h1{font-family:var(--display);font-weight:800;font-size:26px;text-align:center;margin:0;letter-spacing:-.02em}
+  .authcard .sub{text-align:center;color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;margin:3px 0 20px}
+  .authcard label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:12px 2px 5px}
+  .authcard .inp{width:100%}
+  .authcard .btn.wide{margin-top:18px}
+  .authlink{text-align:center;margin-top:14px;font-size:13px;color:var(--muted)}
+  .authlink a{color:var(--accent);font-weight:600;cursor:pointer;text-decoration:none}
+  .autherr{color:var(--crit);font-size:12.5px;margin-top:10px;text-align:center;min-height:16px}
+  .loading{text-align:center;color:var(--muted);padding:40px}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>
+  <linearGradient id="vrmG" gradientUnits="userSpaceOnUse" x1="8" y1="13" x2="40" y2="37">
+    <stop offset="0" stop-color="#34d399"/><stop offset=".5" stop-color="#6ee7a8"/><stop offset="1" stop-color="#bef264"/>
+  </linearGradient>
+  <linearGradient id="vrmP" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#9168f4"/><stop offset="1" stop-color="#6d28d9"/>
+  </linearGradient>
+</defs></svg>
+
+<div class="wrap" id="wrap" hidden>
+  <header>
+    <div class="brandrow">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="13.5" fill="url(#vrmP)"/><rect x="1" y="1" width="46" height="46" rx="12.5" fill="none" stroke="#fff" stroke-opacity=".10"/><rect width="48" height="21" rx="13" fill="#fff" opacity=".07"/><g stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M10.5 15L19 35L29 15L37.5 35" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M22.5 27.6H34.3" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M10.5 15L19 35L29 15L37.5 35" stroke="url(#vrmG)" stroke-width="4.6"/><path d="M22.5 27.6H34.3" stroke="url(#vrmG)" stroke-width="4.6"/></g></svg>
+        </span>
+        <div class="bt"><b>Varemil</b><span>control parental</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px">
+        <button class="bell" id="bellBtn" title="Avisos" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="badge" id="bellBadge">0</span>
+        </button>
+        <button class="me" id="meBtn" title="Tu cuenta">·</button>
+      </div>
+    </div>
+    <div class="subtitle" id="subtitle"></div>
+  </header>
+
+  <main><div class="screen" id="screen"><div class="loading">Cargando…</div></div></main>
+
+  <nav><div class="navbar" id="nav">
+    <button data-t="inicio" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>Inicio</button>
+    <button data-t="horarios"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Horarios</button>
+    <button data-t="actividad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/></svg>Actividad</button>
+    <button data-t="filtro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 1 9 9c0 .7-.1 1.4-.2 2"/><path d="M12 3a9 9 0 0 0-9 9 9 9 0 0 0 14.9 6.7"/><path d="m3 3 18 18"/></svg>Filtro</button>
+    <button data-t="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 6.8 19.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 15a1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 8.6l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 9 5.4V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.1 2.3"/></svg>Ajustes</button>
+  </div></nav>
+</div>
+
+<div class="auth" id="auth"><div class="loading" style="color:var(--muted)">Cargando Varemil…</div></div>
+<div class="toast" id="toast"></div>
+<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v9</div>
+
+<script src="supabase.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var SUPA_URL = "https://qcvgibzqlupaiqnczdat.supabase.co";
+  var SUPA_KEY = "sb_publishable_uJbfw7UJsaon8V63feSRkA_4FnLwZF9";
+  var CODIGO_FAMILIA = ""; // se introduce al unirse (no se guarda en el codigo publico)
+
+  if(!window.supabase || !window.supabase.createClient){
+    document.body.innerHTML = '<div style="padding:44px 24px;color:#eaedf6;background:#0f1422;min-height:100vh;font-family:system-ui,sans-serif;font-size:16px;line-height:1.5">No se pudo cargar Varemil. Suele ser por abrir sin conexión, o porque el navegador del móvil está anticuado. Cierra la app, conéctate a internet y vuelve a abrirla. Si usas el APK, actualiza <b>Android System WebView</b> y <b>Chrome</b> desde Play Store.</div>';
+    return;
+  }
+  var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+  // Que ningun error se quede en silencio.
+  window.addEventListener('unhandledrejection', function(ev){ try{ var m=(ev.reason&&ev.reason.message)||ev.reason; if(m) avisoError(m); }catch(_){}} );
+  window.addEventListener('error', function(ev){ try{ if(ev.message) avisoError(ev.message); }catch(_){}} );
+
+  var dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+  var diasCorto = ["L","M","X","J","V","S","D"];
+  var CATS = [
+    ["adulto","Contenido adulto",true],["apuestas","Apuestas y casino",false],
+    ["citas","Citas y ligue",false],["chat","Chats con desconocidos",false],
+    ["pirateria","Descargas y piratería",false],["drogas","Drogas",false],
+    ["armas","Armas",false],["redes_sociales","Redes sociales",false],
+    ["juegos","Juegos online",false],["video","Vídeo y streaming",false],["compras","Compras online",false]
+  ];
+
+  var state = { tab:"inicio", selChild:null, familiaId:null, familia:{}, parent:{nombre:"",email:""}, children:[], solicitudes:[] };
+  var pollId = null;
+
+  // ---------- utilidades ----------
+  function el(id){ return document.getElementById(id); }
+  function fmt(min){ min=Math.max(0,Math.round(min)); var h=Math.floor(min/60),m=min%60; if(h>0)return h+"h "+(m>0?m+"m":""); return m+"m"; }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function toMin(t){ var p=String(t).split(":"); return (+p[0])*60+(+p[1]); }
+  function hoyStr(){ return new Date().toISOString().slice(0,10); }
+  function hace(n){ var d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
+  function diaKeyHoy(){ var g=new Date().getDay(); return ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"][g]; }
+
+  var toastT;
+  function toast(m){ var t=el("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove("show");},3200); }
+
+  // Muestra cualquier error de forma visible (para no quedarse "sin hacer nada").
+  function avisoError(m){
+    m = String(m||"Error desconocido");
+    try{ toast("⚠ "+m); }catch(e){}
+    var a=document.getElementById("aErr"); if(a){ a.style.color="var(--crit)"; a.textContent=m; }
+    var j=document.getElementById("jErr"); if(j){ j.textContent=m; }
+  }
+  // Corta una llamada que se quede colgada (p. ej. sin conexión).
+  function conTimeout(promesa, ms){
+    return Promise.race([ promesa, new Promise(function(_, rej){ setTimeout(function(){ rej(new Error("Sin respuesta del servidor. Revisa tu conexión o actualiza Android System WebView.")); }, ms||15000); }) ]);
+  }
+
+  function icon(n){
+    var s='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+    if(n==="lock")return s+'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+    if(n==="play")return s+'<path d="M7 5l12 7-12 7V5Z"/></svg>';
+    if(n==="info")return s+'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>';
+    if(n==="pc")return s+'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>';
+    return s+'</svg>';
+  }
+
+  // ---------- horario: evaluar estado ----------
+  function evaluar(cfg, dev){
+    var r={acceso:"libre", hasta:""};
+    if(!dev){ r.acceso="sinpc"; return r; }
+    if(dev.estado==="offline"){ r.acceso="apagado"; }
+    var tramos=(cfg.horario&&cfg.horario[diaKeyHoy()])||[];
+    var now=new Date(); var m=now.getHours()*60+now.getMinutes();
+    var dentro=null;
+    for(var i=0;i<tramos.length;i++){ var a=toMin(tramos[i][0]),b=toMin(tramos[i][1]); if(m>=a&&m<b){dentro=tramos[i];break;} }
+    var limite=cfg.limiteDiarioMinutos||0;
+    var usados=dev.usados_hoy||0;
+    var cuota = !limite || usados<limite;
+    if(dentro && cuota){ r.permitido=true; r.hasta="las "+dentro[1]; }
+    else {
+      r.permitido=false;
+      var prox=null;
+      for(var j=0;j<tramos.length;j++){ if(toMin(tramos[j][0])>m){prox=tramos[j][0];break;} }
+      if(!cuota) r.hasta="mañana";
+      else if(prox) r.hasta="las "+prox;
+      else r.hasta="mañana";
+    }
+    if(dev.estado!=="offline") r.acceso = r.permitido ? "libre" : "bloqueado";
+    return r;
+  }
+
+  // ---------- filtro: normalizar ----------
+  function catsPorNivel(nivel, edad){
+    var base=["adulto","apuestas","citas","chat","pirateria","drogas","armas"];
+    if(nivel==="nino" || (nivel!=="adolescente" && edad<12)) base=base.concat(["redes_sociales"]);
+    return base;
+  }
+  function normFiltro(fw, edad){
+    fw=fw||{};
+    var nivel=fw.nivel|| (edad<12?"nino":"adolescente");
+    var activas;
+    if(fw.categorias && fw.categorias.length) activas=fw.categorias;
+    else activas=catsPorNivel(nivel, edad);
+    var cats={};
+    CATS.forEach(function(c){ cats[c[0]] = c[2] || activas.indexOf(c[0])>=0; });
+    return { nivel:nivel, youtube: fw.youtube || (edad<12?"estricto":"moderado"), cats:cats };
+  }
+  function filtroAConfig(f){
+    var categorias=[]; CATS.forEach(function(c){ if(f.cats[c[0]]) categorias.push(c[0]); });
+    return { nivel:f.nivel, youtube:f.youtube, categorias:categorias };
+  }
+
+  function child(id){ for(var i=0;i<state.children.length;i++) if(state.children[i].id===id) return state.children[i]; return state.children[0]; }
+
+  // ====================== AUTENTICACION ======================
+  function vLogin(modo){
+    var reg = modo==="registro";
+    return '<div class="authcard">'
+      +'<div class="authlogo"><svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="13.5" fill="url(#vrmP)"/><rect x="1" y="1" width="46" height="46" rx="12.5" fill="none" stroke="#fff" stroke-opacity=".10"/><rect width="48" height="21" rx="13" fill="#fff" opacity=".07"/><g stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M10.5 15L19 35L29 15L37.5 35" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M22.5 27.6H34.3" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M10.5 15L19 35L29 15L37.5 35" stroke="url(#vrmG)" stroke-width="4.6"/><path d="M22.5 27.6H34.3" stroke="url(#vrmG)" stroke-width="4.6"/></g></svg></div>'
+      +'<h1>Varemil</h1><div class="sub">control parental</div>'
+      +(reg?'<label>Tu nombre</label><input class="inp" id="aNombre" placeholder="Papá / Mamá">':'')
+      +'<label>Correo</label><input class="inp" id="aEmail" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="username">'
+      +'<label>Contraseña</label><input class="inp" id="aPass" type="password" placeholder="••••••••" autocomplete="'+(reg?'new-password':'current-password')+'">'
+      +'<button class="btn pri wide" id="aGo">'+(reg?'Crear cuenta':'Entrar')+'</button>'
+      +'<div class="autherr" id="aErr"></div>'
+      +'<div class="authlink">'+(reg?'¿Ya tienes cuenta? <a id="aSwitch">Entrar</a>':'¿Primera vez? <a id="aSwitch">Crear cuenta</a>')+'</div>'
+      +'</div>';
+  }
+  function vJoin(){
+    return '<div class="authcard">'
+      +'<div class="authlogo"><svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="13.5" fill="url(#vrmP)"/><rect x="1" y="1" width="46" height="46" rx="12.5" fill="none" stroke="#fff" stroke-opacity=".10"/><rect width="48" height="21" rx="13" fill="#fff" opacity=".07"/><g stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M10.5 15L19 35L29 15L37.5 35" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M22.5 27.6H34.3" stroke="#160832" stroke-opacity=".32" stroke-width="4.6" transform="translate(0 1.5)"/><path d="M10.5 15L19 35L29 15L37.5 35" stroke="url(#vrmG)" stroke-width="4.6"/><path d="M22.5 27.6H34.3" stroke="url(#vrmG)" stroke-width="4.6"/></g></svg></div>'
+      +'<h1>Unirse</h1><div class="sub">a tu familia</div>'
+      +'<label>Tu nombre</label><input class="inp" id="jNombre" placeholder="Papá / Mamá">'
+      +'<label>Código de familia</label><input class="inp" id="jCodigo" value="'+esc(CODIGO_FAMILIA)+'">'
+      +'<button class="btn pri wide" id="jGo">Entrar a la familia</button>'
+      +'<div class="autherr" id="jErr"></div>'
+      +'<div class="authlink"><a id="jOut">Cerrar sesión</a></div>'
+      +'</div>';
+  }
+  function mostrarAuth(vista){
+    el("wrap").hidden=true; var a=el("auth"); a.hidden=false;
+    if(vista==="join"){ a.innerHTML=vJoin(); enlazarJoin(); }
+    else { a.innerHTML=vLogin(vista); enlazarLogin(vista); }
+  }
+  function ocultarAuth(){ el("auth").hidden=true; el("wrap").hidden=false; }
+
+  function enlazarLogin(modo){
+    el("aSwitch").onclick=function(){ mostrarAuth(modo==="registro"?"login":"registro"); };
+    el("aGo").onclick=async function(){
+      var email=el("aEmail").value.trim(), pass=el("aPass").value, err=el("aErr");
+      var nombre = el("aNombre")?el("aNombre").value.trim():"";
+      if(!email||!pass){ err.textContent="Pon correo y contraseña."; return; }
+      el("aGo").disabled=true; err.textContent="";
+      try{
+        if(modo==="registro"){
+          var r=await conTimeout(sb.auth.signUp({email:email,password:pass,options:{data:{nombre:nombre}}}), 15000);
+          if(r.error) throw r.error;
+          if(!r.data.session){ err.style.color="var(--muted)"; err.textContent="Te hemos enviado un correo. Confírmalo y vuelve a entrar."; el("aGo").disabled=false; return; }
+          sessionStorage.setItem("vrm_nombre", nombre||"");
+          await trasLogin();
+        } else {
+          var r2=await conTimeout(sb.auth.signInWithPassword({email:email,password:pass}), 15000);
+          if(r2.error) throw r2.error;
+          await trasLogin();
+        }
+      }catch(e){ err.style.color="var(--crit)"; err.textContent=traducir(e.message||"Error"); el("aGo").disabled=false; }
+    };
+  }
+  function enlazarJoin(){
+    el("jOut").onclick=async function(){ await sb.auth.signOut(); mostrarAuth("login"); };
+    el("jGo").onclick=async function(){
+      var cod=el("jCodigo").value.trim(), nombre=el("jNombre").value.trim()||sessionStorage.getItem("vrm_nombre")||"Padre/Madre", err=el("jErr");
+      if(!cod){ err.textContent="Falta el código."; return; }
+      el("jGo").disabled=true; err.textContent="";
+      try{
+        var r=await conTimeout(sb.rpc("unirse_a_familia",{codigo:cod,nombre_padre:nombre}), 15000);
+        if(r.error) throw r.error;
+        await trasLogin();
+      }catch(e){ err.textContent=traducir(e.message||"Error"); el("jGo").disabled=false; }
+    };
+  }
+  function traducir(m){
+    if(/Invalid login/i.test(m)) return "Correo o contraseña incorrectos.";
+    if(/already registered/i.test(m)) return "Ese correo ya tiene cuenta. Entra con él.";
+    if(/Email not confirmed/i.test(m)) return "Confirma tu correo antes de entrar.";
+    if(/at least 6/i.test(m)) return "La contraseña debe tener al menos 6 caracteres.";
+    return m;
+  }
+
+  async function trasLogin(){
+    try{
+      // getSession es local (no red) -> no se cuelga.
+      var sess=(await sb.auth.getSession()).data.session;
+      var u=sess && sess.user;
+      if(!u){ avisoError("No se pudo iniciar sesion."); mostrarAuth("login"); return; }
+      state.parent.email=u.email;
+
+      var mem=await conTimeout(sb.from("miembros").select("familia_id,nombre").limit(1), 8000);
+      if(mem.error) throw mem.error;
+      if(!mem.data || !mem.data.length){ mostrarAuth("join"); return; }
+      state.familiaId=mem.data[0].familia_id;
+      state.parent.nombre=mem.data[0].nombre||"";
+
+      ocultarAuth();
+      el("screen").innerHTML='<div class="loading">Cargando…</div>';
+      await cargarDatos();
+      render();
+
+      if(pollId) clearInterval(pollId);
+      pollId = setInterval(function(){
+        if(!el("auth").hidden) return;
+        cargarDatos().then(function(){ render(); }).catch(function(){});
+      }, 30000);
+    }catch(e){
+      avisoError("No se pudo cargar: "+(e.message||e)+". Entra de nuevo.");
+      try{ await sb.auth.signOut(); }catch(_){}
+      mostrarAuth("login");
+    }
+  }
+
+  // ====================== DATOS ======================
+  async function cargarDatos(){
+    try{
+      var res=await conTimeout(Promise.all([
+        sb.from("familias").select("*").eq("id",state.familiaId).single(),
+        sb.from("hijos").select("*").eq("familia_id",state.familiaId).order("edad",{ascending:false}),
+        sb.from("dispositivos").select("*").eq("familia_id",state.familiaId),
+        sb.from("informes").select("*").eq("familia_id",state.familiaId).gte("fecha",hace(6)),
+        sb.from("solicitudes").select("*").eq("familia_id",state.familiaId).eq("estado","pendiente").order("creado_at",{ascending:false})
+      ]), 20000);
+      state.familia=res[0].data||{};
+      var hijos=res[1].data||[], disps=res[2].data||[], infs=res[3].data||[], solics=res[4].data||[];
+      state.children=hijos.map(function(h){
+        var dev=null; for(var i=0;i<disps.length;i++){ if(disps[i].hijo_id===h.id){dev=disps[i];break;} }
+        var cfg=h.config||{};
+        var hoyInf=null; for(var k=0;k<infs.length;k++){ if(infs[k].hijo_id===h.id && infs[k].fecha===hoyStr()){hoyInf=infs[k];break;} }
+        // Si no se conecta desde hace >3 min, lo damos por apagado aunque la nube diga otra cosa.
+        var estadoDev=dev?dev.estado:null;
+        if(dev && dev.ultimo_visto){ var mins=(Date.now()-new Date(dev.ultimo_visto).getTime())/60000; if(mins>3) estadoDev="offline"; }
+        if(dev) dev.estado=estadoDev;
+        var ev=evaluar(cfg, dev);
+        return {
+          id:h.id, nombre:h.nombre, edad:h.edad, color:h.color||"#4f46e5",
+          inicial:(h.inicial||h.nombre.charAt(0)||"?").toUpperCase(), rawConfig:cfg,
+          device: dev?{id:dev.id,nombre:dev.nombre,estado:estadoDev,ultimo_visto:dev.ultimo_visto}:null,
+          hoy:{usados:dev?(dev.usados_hoy||0):0, limite:cfg.limiteDiarioMinutos||0},
+          acceso:ev.acceso, hasta:ev.hasta,
+          horario:cfg.horario||{},
+          filtro:normFiltro(cfg.filtroWeb, h.edad),
+          apps: (hoyInf&&hoyInf.apps)||[],
+          webs: (hoyInf&&hoyInf.web)||[],
+          semana: construirSemana(infs, h.id)
+        };
+      });
+      state.solicitudes = solics.map(function(s){
+        var h=null; for(var i=0;i<state.children.length;i++){ if(state.children[i].id===s.hijo_id){h=state.children[i];break;} }
+        return { id:s.id, hijo:h, dispositivo_id:s.dispositivo_id, creado_at:s.creado_at };
+      });
+      if(!state.selChild && state.children.length) state.selChild=state.children[0].id;
+    }catch(e){ avisoError("Error cargando datos: "+(e.message||e)); throw e; }
+  }
+  function construirSemana(infs, hijoId){
+    var map={}; infs.forEach(function(i){ if(i.hijo_id===hijoId) map[i.fecha]=i.total_min||0; });
+    var out=[]; for(var d=6; d>=0; d--){ out.push(map[hace(d)]||0); } return out;
+  }
+  async function guardarHijo(c){
+    try{
+      var cfg=c.rawConfig||{};
+      cfg.horario=c.horario; cfg.limiteDiarioMinutos=c.hoy.limite; cfg.filtroWeb=filtroAConfig(c.filtro);
+      c.rawConfig=cfg;
+      var r=await sb.from("hijos").update({config:cfg, actualizado_at:new Date().toISOString()}).eq("id",c.id);
+      if(r.error) throw r.error;
+    }catch(e){ toast("No se pudo guardar"); }
+  }
+  async function enviarComando(c, tipo, args){
+    if(!c.device){ toast(c.nombre+" aún no tiene PC vinculado"); return false; }
+    try{
+      var r=await sb.from("comandos").insert({familia_id:state.familiaId, dispositivo_id:c.device.id, tipo:tipo, args:args||{}});
+      if(r.error) throw r.error;
+      return true;
+    }catch(e){ toast("No se pudo enviar la orden"); return false; }
+  }
+
+  async function aprobarSolicitud(sid, did, min){
+    if(!min) min=15;
+    try{
+      await sb.from("comandos").insert({familia_id:state.familiaId, dispositivo_id:did, tipo:"mas_tiempo", args:{minutos:min}});
+      await sb.from("solicitudes").update({estado:"aprobada", resuelto_at:new Date().toISOString()}).eq("id",sid);
+      toast("Concedidos +"+min+" min");
+      await refrescar();
+    }catch(e){ toast("No se pudo conceder"); }
+  }
+  async function denegarSolicitud(sid){
+    try{
+      await sb.from("solicitudes").update({estado:"denegada", resuelto_at:new Date().toISOString()}).eq("id",sid);
+      toast("Petición denegada");
+      await refrescar();
+    }catch(e){ toast("No se pudo"); }
+  }
+
+  // ====================== PANTALLAS ======================
+  function haceTexto(iso){
+    if(!iso) return "";
+    var m=Math.floor((Date.now()-new Date(iso).getTime())/60000);
+    if(m<1) return "ahora mismo"; if(m<60) return "hace "+m+" min";
+    var h=Math.floor(m/60); if(h<24) return "hace "+h+(h>1?" horas":" hora");
+    var d=Math.floor(h/24); return "hace "+d+(d>1?" días":" día");
+  }
+
+  function vPeticiones(){
+    if(!state.solicitudes || !state.solicitudes.length) return "";
+    var h='';
+    state.solicitudes.forEach(function(s){
+      var nombre=s.hijo?s.hijo.nombre:"Tu hijo", color=s.hijo?s.hijo.color:"#7c3aed", ini=s.hijo?s.hijo.inicial:"?";
+      h+='<div class="card ask child-card"><div class="child-head">'
+        +'<div class="avatar" style="background:'+esc(color)+'">'+esc(ini)+'</div>'
+        +'<div class="meta"><div class="n">'+esc(nombre)+' pide más tiempo</div>'
+        +'<div class="d">'+esc(haceTexto(s.creado_at))+'</div></div>'
+        +'<span class="chip warn"><span class="dot"></span>Nuevo</span></div>'
+        +'<div class="actions">'
+        +'<button class="btn pri" data-act="aprobar" data-s="'+s.id+'" data-d="'+s.dispositivo_id+'" data-min="15">Dar +15 min</button>'
+        +'<button class="btn pri" data-act="aprobar" data-s="'+s.id+'" data-d="'+s.dispositivo_id+'" data-min="30">Dar +30 min</button>'
+        +'<button class="btn danger" data-act="denegar" data-s="'+s.id+'">Denegar</button>'
+        +'</div></div>';
+    });
+    return h;
+  }
+
+  function vInicio(){
+    var h='<h3 class="title">Hola'+(state.parent.nombre?", "+esc(state.parent.nombre):"")+'</h3><p class="lead">Así va hoy el tiempo de pantalla.</p>';
+    h+=vPeticiones();
+    if(!state.children.length){ return h+emptyCard("No hay hijos todavía","Añade uno desde Ajustes."); }
+    state.children.forEach(function(c){
+      var dev=c.device?c.device.estado:"sinpc";
+      var chip = dev==="online"?'<span class="chip ok"><span class="dot"></span>En línea</span>'
+               : dev==="locked"?'<span class="chip crit"><span class="dot"></span>Bloqueado</span>'
+               : dev==="offline"?'<span class="chip off"><span class="dot"></span>Apagado</span>'
+               : '<span class="chip off"><span class="dot"></span>Sin PC</span>';
+      var estado;
+      if(!c.device) estado='<div class="state-line">Vincula su PC desde <b>Ajustes</b>.</div>';
+      else if(c.acceso==="libre") estado='<div class="state-line">Ahora: <b>libre hasta '+esc(c.hasta||"")+'</b></div>';
+      else estado='<div class="state-line">Ahora: <b>bloqueado</b>'+(c.hasta?" · vuelve "+esc(c.hasta):"")+'</div>';
+      estado+='<div class="state-line">'+fmt(Math.max(0,c.hoy.limite-c.hoy.usados))+' del límite diario';
+      estado+= c.hoy.limite?"":' (sin límite)'; estado+='</div>';
+
+      h+='<div class="card child-card"><div class="child-head">'
+        +'<div class="avatar" style="background:'+esc(c.color)+'">'+esc(c.inicial)+'</div>'
+        +'<div class="meta"><div class="n">'+esc(c.nombre)+'</div><div class="d">'+esc(c.device?c.device.nombre:"Sin dispositivo")+'</div></div>'+chip+'</div>'
+        +'<div class="child-body">'+ring(c.hoy.usados,c.hoy.limite)+'<div class="child-state">'+estado+'</div></div>'
+        +'<div class="actions">'
+        +(c.acceso==="bloqueado"
+          ?'<button class="btn pri block" data-act="permitir" data-c="'+c.id+'">'+icon("play")+' Permitir ahora</button>'
+          :'<button class="btn danger block" data-act="bloquear" data-c="'+c.id+'">'+icon("lock")+' Bloquear ahora</button>')
+        +'<button class="btn" data-act="mas" data-c="'+c.id+'">+30 min</button>'
+        +'<button class="btn" data-act="hoy" data-c="'+c.id+'">Permitir hoy</button>'
+        +'</div></div>';
+    });
+    return h;
+  }
+
+  function ring(usados,limite){
+    var p=limite>0?Math.min(100,Math.round(usados/limite*100)):0;
+    var col=p>=100?"var(--crit)":p>=75?"var(--warn)":"var(--ok)";
+    var r=38,c=2*Math.PI*r,off=c*(1-p/100);
+    return '<div class="ring-wrap"><svg width="88" height="88" viewBox="0 0 88 88">'
+      +'<circle cx="44" cy="44" r="'+r+'" fill="none" stroke="var(--ring-track)" stroke-width="8"/>'
+      +'<circle cx="44" cy="44" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 44 44)"/></svg>'
+      +'<div class="lbl"><b>'+fmt(usados)+'</b><span>de '+(limite?fmt(limite):"∞")+'</span></div></div>';
+  }
+
+  function childSeg(){
+    if(state.children.length<2) return "";
+    var h='<div class="seg" id="childSeg">';
+    state.children.forEach(function(c){ h+='<button data-child="'+c.id+'" class="'+(state.selChild===c.id?"on":"")+'">'+esc(c.nombre)+'</button>'; });
+    return h+'</div>';
+  }
+  function emptyCard(t,s){ return '<div class="card"><div class="empty">'+icon("pc")+'<div><b>'+esc(t)+'</b></div><div>'+esc(s)+'</div></div></div>'; }
+
+  function vHorarios(){
+    var c=child(state.selChild);
+    var h='<h3 class="title">Horarios</h3><p class="lead">Cuándo puede usar el ordenador.</p>'+childSeg()+'<div class="card">';
+    dias.forEach(function(d){
+      var tr=c.horario[d]||[]; var activo=tr.length>0; var blocks="";
+      tr.forEach(function(t){ var a=toMin(t[0]),b=toMin(t[1]); blocks+='<span class="blk" style="left:'+(a/1440*100)+'%;width:'+((b-a)/1440*100)+'%"></span>'; });
+      var chips=activo?tr.map(function(t){return '<span class="tramo">'+esc(t[0])+'–'+esc(t[1])+'</span>';}).join(""):'<span class="tramo none">Bloqueado todo el día</span>';
+      h+='<div class="day"><div class="day-top"><span class="day-name">'+d+'</span><button class="sw '+(activo?"on":"")+'" data-day="'+d+'"></button></div><div class="timeline">'+blocks+'</div><div class="tramos">'+chips+'</div></div>';
+    });
+    h+='</div><div class="note">'+icon("info")+'<div>El interruptor abre o cierra un día entero. Al guardar, el cambio llega al PC en la próxima sincronización.</div></div>';
+    return h;
+  }
+
+  function vActividad(){
+    var c=child(state.selChild);
+    var h='<h3 class="title">Actividad</h3><p class="lead">Qué usa y qué visita.</p>'+childSeg();
+    var tieneApps=c.apps&&c.apps.length, tieneWeb=c.webs&&c.webs.length;
+    var totSemana=0; c.semana.forEach(function(x){totSemana+=x;});
+    if(!tieneApps && !tieneWeb && totSemana===0){
+      return h+emptyCard("Aún no hay actividad", c.device?"Cuando "+c.nombre+" use el PC, verás aquí su tiempo y sus webs.":"Vincula su PC desde Ajustes para empezar a recibir datos.");
+    }
+    var total=0; c.apps.forEach(function(a){total+=a[1];});
+    var maxApp=1; c.apps.forEach(function(a){if(a[1]>maxApp)maxApp=a[1];});
+    var maxWeek=1; c.semana.forEach(function(m){if(m>maxWeek)maxWeek=m;}); if(c.hoy.limite>maxWeek)maxWeek=c.hoy.limite;
+
+    h+='<div class="kpis"><div class="kpi"><div class="v">'+fmt(total)+'</div><div class="k">Hoy en total</div></div>'
+      +'<div class="kpi"><div class="v">'+esc(tieneApps?c.apps[0][0]:"—")+'</div><div class="k">App más usada</div></div>'
+      +'<div class="kpi"><div class="v">'+(c.webs?c.webs.length:0)+'</div><div class="k">Webs hoy</div></div></div>';
+
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Esta semana</h2><div class="weekchart">';
+    c.semana.forEach(function(m,i){ h+='<div class="wbar '+(i===6?"today":"")+'"><div class="col"><div class="f" style="height:'+Math.round(m/maxWeek*100)+'%"></div></div><div class="dl">'+diasCorto[i]+'</div></div>'; });
+    h+='</div></div>';
+
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Programas y juegos</h2>';
+    if(tieneApps) c.apps.forEach(function(a){ h+='<div class="barline"><div class="ic">'+esc(String(a[0]).charAt(0))+'</div><div class="bwrap"><div class="top"><b>'+esc(a[0])+'</b><span class="v">'+fmt(a[1])+'</span></div><div class="track"><div class="fill" style="width:'+Math.round(a[1]/maxApp*100)+'%"></div></div></div></div>'; });
+    else h+='<div class="empty" style="padding:12px">Sin datos hoy</div>';
+    h+='</div>';
+
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Páginas visitadas hoy</h2>';
+    if(tieneWeb) c.webs.forEach(function(w){ h+='<div class="web"><div class="fav">'+esc(String(w[0]).charAt(0).toUpperCase())+'</div><div class="u">'+esc(w[0])+'</div><div class="c">'+esc(w[1])+' visitas</div></div>'; });
+    else h+='<div class="empty" style="padding:12px">Sin datos hoy</div>';
+    h+='</div>';
+    return h;
+  }
+
+  function vFiltro(){
+    var c=child(state.selChild);
+    var h='<h3 class="title">Filtro web</h3><p class="lead">Qué puede abrir, según su edad.</p>'+childSeg();
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Nivel</h2><div class="seglevel" id="nivel">'
+      +'<button data-nivel="nino" class="'+(c.filtro.nivel==="nino"?"on":"")+'">Niño</button>'
+      +'<button data-nivel="adolescente" class="'+(c.filtro.nivel==="adolescente"?"on":"")+'">Adolescente</button>'
+      +'<button data-nivel="personalizado" class="'+(c.filtro.nivel==="personalizado"?"on":"")+'">A medida</button></div></div>';
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Categorías bloqueadas</h2>';
+    CATS.forEach(function(cat){ var on=!!c.filtro.cats[cat[0]], lk=cat[2];
+      h+='<div class="row"><div class="txt"><div class="t">'+esc(cat[1])+'</div>'+(lk?'<div class="s">Siempre bloqueado</div>':'')+'</div><button class="sw '+(on?"on":"")+(lk?" locked":"")+'" data-cat="'+cat[0]+'" '+(lk?"disabled":"")+'></button></div>'; });
+    h+='</div>';
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Buscadores y vídeo</h2>'
+      +'<div class="row"><div class="txt"><div class="t">Búsqueda segura</div><div class="s">Siempre activada</div></div><button class="sw on locked" disabled></button></div>'
+      +'<div class="row" style="border-top:0"><div class="txt"><div class="t">YouTube restringido</div></div></div>'
+      +'<div class="seglevel" id="yt"><button data-yt="estricto" class="'+(c.filtro.youtube==="estricto"?"on":"")+'">Estricto</button><button data-yt="moderado" class="'+(c.filtro.youtube==="moderado"?"on":"")+'">Moderado</button><button data-yt="ninguno" class="'+(c.filtro.youtube==="ninguno"?"on":"")+'">Ninguno</button></div></div>';
+    h+='<div class="note">'+icon("info")+'<div>Los cambios se guardan y llegan al PC en unos minutos. El contenido adulto se bloquea siempre, a nivel de red.</div></div>';
+    return h;
+  }
+
+  function vAjustes(){
+    var h='<h3 class="title">Ajustes</h3><p class="lead">Cuenta, hijos y dispositivos.</p>';
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Tu cuenta</h2>'
+      +'<div class="row"><div class="avatar" style="width:38px;height:38px;border-radius:11px;font-size:15px;background:var(--accent)">'+esc((state.parent.nombre||state.parent.email||"?").charAt(0).toUpperCase())+'</div>'
+      +'<div class="txt"><div class="t">'+esc(state.parent.nombre||"Padre/Madre")+'</div><div class="s">'+esc(state.parent.email)+'</div></div>'
+      +'<button class="btn" data-act="logout">Salir</button></div></div>';
+
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Invitar al otro progenitor</h2>'
+      +'<div class="s" style="color:var(--muted);font-size:12.5px">Que instale la app, cree su cuenta y use este código de familia:</div>'
+      +'<div class="codebox">'+esc(state.familiaId||"")+'</div>'
+      +'<button class="btn wide" data-act="copiarcodigo" style="margin-top:10px">Copiar código</button></div>';
+
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Hijos y dispositivos</h2>';
+    state.children.forEach(function(c){
+      var dev=c.device?c.device.estado:"sinpc";
+      var chip=dev==="online"?'<span class="chip ok"><span class="dot"></span>En línea</span>':dev==="locked"?'<span class="chip crit"><span class="dot"></span>Bloqueado</span>':dev==="offline"?'<span class="chip off"><span class="dot"></span>Apagado</span>':'<span class="chip off">Sin PC</span>';
+      var sub=c.device?c.device.nombre:"Sin dispositivo";
+      if(c.device&&c.device.ultimo_visto) sub+=" · "+haceTexto(c.device.ultimo_visto);
+      h+='<div class="row"><div class="avatar" style="width:34px;height:34px;border-radius:10px;font-size:14px;background:'+esc(c.color)+'">'+esc(c.inicial)+'</div>'
+        +'<div class="txt"><div class="t">'+esc(c.nombre)+' · '+c.edad+' años</div><div class="s">'+esc(sub)+'</div></div>'
+        +(c.device?chip:'<button class="btn" data-act="addpc" data-c="'+c.id+'">Vincular PC</button>')+'</div>';
+    });
+    h+='</div>';
+    h+='<div class="note">'+icon("info")+'<div>Varemil · control parental. Al vincular un PC te damos un código para pegarlo al instalar el programa en ese ordenador.</div></div>';
+    return h;
+  }
+
+  // ====================== RENDER ======================
+  var screens={inicio:vInicio,horarios:vHorarios,actividad:vActividad,filtro:vFiltro,ajustes:vAjustes};
+  function render(){
+   try{
+    el("screen").innerHTML=screens[state.tab]();
+    var n=el("nav"); [].forEach.call(n.children,function(b){ b.classList.toggle("on",b.getAttribute("data-t")===state.tab); });
+    el("meBtn").textContent=(state.parent.nombre||state.parent.email||"·").charAt(0).toUpperCase();
+    var nped=state.solicitudes?state.solicitudes.length:0;
+    el("bellBtn").hidden = nped===0;
+    el("bellBadge").textContent = nped;
+    var bloq=0; state.children.forEach(function(c){ if(c.acceso==="bloqueado")bloq++; });
+    el("subtitle").textContent = state.children.length?(state.children.length+" "+(state.children.length>1?"hijos":"hijo")+" · "+(bloq?bloq+" bloqueado"+(bloq>1?"s":""):"todo en orden")):"";
+   }catch(e){ avisoError("Error al mostrar: "+(e.message||e)); }
+  }
+
+  async function refrescar(){ await cargarDatos(); render(); }
+
+  // ====================== EVENTOS ======================
+  el("nav").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; state.tab=b.getAttribute("data-t"); render(); });
+  el("meBtn").addEventListener("click",function(){ state.tab="ajustes"; render(); });
+  el("bellBtn").addEventListener("click",function(){ state.tab="inicio"; render(); try{window.scrollTo(0,0);}catch(e){} });
+
+  el("screen").addEventListener("click",async function(e){
+    var b=e.target.closest("button,[data-day],[data-cat]"); if(!b)return;
+    if(b.hasAttribute("data-child")){ state.selChild=b.getAttribute("data-child"); render(); return; }
+    var act=b.getAttribute("data-act");
+    if(act){
+      if(act==="aprobar"){ await aprobarSolicitud(b.getAttribute("data-s"), b.getAttribute("data-d"), parseInt(b.getAttribute("data-min"),10)); return; }
+      if(act==="denegar"){ await denegarSolicitud(b.getAttribute("data-s")); return; }
+      var cid=b.getAttribute("data-c"); var c=cid?child(cid):child(state.selChild);
+      if(act==="bloquear"){ if(await enviarComando(c,"bloquear")){ c.acceso="bloqueado"; if(c.device)c.device.estado="locked"; toast(c.nombre+": orden de bloqueo enviada"); render(); } }
+      else if(act==="permitir"){ if(await enviarComando(c,"permitir")){ c.acceso="libre"; if(c.device)c.device.estado="online"; toast(c.nombre+": desbloqueo enviado"); render(); } }
+      else if(act==="mas"){ if(await enviarComando(c,"mas_tiempo",{minutos:30})) toast(c.nombre+": +30 min enviado"); }
+      else if(act==="hoy"){ if(await enviarComando(c,"permitir_hoy")){ c.acceso="libre"; toast(c.nombre+": permitido el resto de hoy"); render(); } }
+      else if(act==="logout"){ await sb.auth.signOut(); location.reload(); }
+      else if(act==="copiarcodigo"){ copiar(state.familiaId); }
+      else if(act==="addpc"){ await vincularPC(c); }
+      return;
+    }
+    if(b.hasAttribute("data-day")){ var cc=child(state.selChild),d=b.getAttribute("data-day");
+      if((cc.horario[d]||[]).length){ cc.horario["_bk_"+d]=cc.horario[d]; cc.horario[d]=[]; }
+      else { cc.horario[d]=cc.horario["_bk_"+d]||[["17:00","20:00"]]; }
+      render(); await guardarHijo(cc); toast("Horario guardado"); return;
+    }
+    if(b.hasAttribute("data-cat")){ if(b.hasAttribute("disabled"))return; var c3=child(state.selChild),cat=b.getAttribute("data-cat");
+      c3.filtro.cats[cat]=!c3.filtro.cats[cat]; c3.filtro.nivel="personalizado"; render(); await guardarHijo(c3); toast("Filtro guardado"); return;
+    }
+    if(b.hasAttribute("data-nivel")){ var c4=child(state.selChild),lvl=b.getAttribute("data-nivel"); c4.filtro.nivel=lvl;
+      if(lvl!=="personalizado"){ c4.filtro=normFiltro({nivel:lvl},c4.edad); }
+      render(); await guardarHijo(c4); toast("Nivel: "+lvl); return;
+    }
+    if(b.hasAttribute("data-yt")){ var c5=child(state.selChild); c5.filtro.youtube=b.getAttribute("data-yt"); render(); await guardarHijo(c5); toast("YouTube: "+b.getAttribute("data-yt")); return; }
+  });
+
+  async function vincularPC(c){
+    try{
+      var r=await sb.from("dispositivos").insert({familia_id:state.familiaId, hijo_id:c.id, nombre:"PC de "+c.nombre}).select("token").single();
+      if(r.error) throw r.error;
+      await refrescar();
+      mostrarToken(c.nombre, r.data.token);
+    }catch(e){ toast("No se pudo crear el dispositivo"); }
+  }
+  function mostrarToken(nombre, token){
+    var a=el("auth"); a.hidden=false;
+    a.innerHTML='<div class="authcard"><h1 style="font-size:20px">PC de '+esc(nombre)+'</h1><div class="sub">código de vinculación</div>'
+      +'<p class="lead" style="text-align:center">Pega este código al instalar Varemil en ese ordenador:</p>'
+      +'<div class="codebox">'+esc(token)+'</div>'
+      +'<button class="btn pri wide" id="tkCopy">Copiar código</button>'
+      +'<div class="authlink"><a id="tkClose">Cerrar</a></div></div>';
+    el("tkCopy").onclick=function(){ copiar(token); };
+    el("tkClose").onclick=function(){ a.hidden=true; };
+  }
+  function copiar(txt){
+    try{ navigator.clipboard.writeText(txt).then(function(){toast("Copiado");},function(){toast("Copia manual: "+txt);}); }
+    catch(e){ toast("Copia manual: "+txt); }
+  }
+
+  // ====================== ARRANQUE ======================
+  (async function init(){
+    var s=null;
+    try{ s=(await conTimeout(sb.auth.getSession(),6000)).data.session; }catch(e){}
+    if(!s){ mostrarAuth("login"); return; }
+    await trasLogin();   // trasLogin se recupera solo si algo falla
+  })();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}); if(window.caches&&caches.keys){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});}
+  });
+}
+</script>
+</body>
+</html>
