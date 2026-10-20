@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico Varemil</title>
+</head>
+<body style="font-family:system-ui,sans-serif;padding:18px;font-size:16px;line-height:1.6;background:#0f1422;color:#eaedf6;margin:0">
+<h2 style="margin:0 0 10px">Diagnóstico Varemil</h2>
+<p style="color:#98a1b8;margin:0 0 14px">Espera a que salga <b>--- FIN ---</b> y mándale a Claude lo que ponga (o una foto).</p>
+<div id="out" style="white-space:pre-wrap;background:#141a2b;border:1px solid #212a40;border-radius:12px;padding:14px"></div>
+<script src="supabase.min.js"></script>
+<script>
+var out=document.getElementById('out'); var log='';
+function p(m){ log += m + "\n"; out.textContent = log; }
+var URL="https://qcvgibzqlupaiqnczdat.supabase.co";
+var KEY="sb_publishable_uJbfw7UJsaon8V63feSRkA_4FnLwZF9";
+(async function(){
+  try{
+    p("1) Libreria supabase: " + ((window.supabase&&window.supabase.createClient)?"OK":"NO CARGA"));
+    if(!(window.supabase&&window.supabase.createClient)){ p("--- FIN --- (la libreria no cargo)"); return; }
+    var sb = window.supabase.createClient(URL, KEY);
+    p("2) Cliente creado: OK");
+
+    try{ var t0=Date.now();
+      var r=await fetch(URL+"/auth/v1/settings",{headers:{apikey:KEY}});
+      p("3) Conexion a la nube: HTTP "+r.status+" ("+(Date.now()-t0)+" ms)");
+    }catch(e){ p("3) Conexion a la nube: ERROR -> "+e); }
+
+    try{ var t1=Date.now();
+      var lr=await sb.auth.signInWithPassword({email:"virucata88@gmail.com",password:"Varemil2026"});
+      if(lr.error) p("4) Login: ERROR -> "+lr.error.message+" (status "+lr.error.status+")");
+      else p("4) Login: OK, sesion="+(!!lr.data.session)+" ("+(Date.now()-t1)+" ms)");
+    }catch(e){ p("4) Login: EXCEPCION -> "+e); }
+
+    try{ var gs=await sb.auth.getSession(); p("5) getSession (local): "+(gs.data.session?"hay sesion":"SIN sesion")); }
+    catch(e){ p("5) getSession: ERROR -> "+e); }
+
+    try{ var t2=Date.now();
+      var m=await sb.from("miembros").select("familia_id,nombre").limit(1);
+      if(m.error) p("6) Consulta familia: ERROR -> "+m.error.message);
+      else p("6) Consulta familia: OK, filas="+(m.data?m.data.length:0)+(m.data&&m.data[0]?(" ("+m.data[0].nombre+")"):"")+" ("+(Date.now()-t2)+" ms)");
+    }catch(e){ p("6) Consulta familia: EXCEPCION -> "+e); }
+
+    try{ var t3=Date.now();
+      var h=await sb.from("hijos").select("nombre").eq("familia_id","7aacc197-9c9a-4660-91f7-52a9c789879b");
+      if(h.error) p("7) Consulta hijos: ERROR -> "+h.error.message);
+      else p("7) Consulta hijos: OK -> "+((h.data||[]).map(function(x){return x.nombre;}).join(", "))+" ("+(Date.now()-t3)+" ms)");
+    }catch(e){ p("7) Consulta hijos: EXCEPCION -> "+e); }
+
+    p("Navegador: "+navigator.userAgent);
+    p("--- FIN ---");
+  }catch(e){ p("ERROR GENERAL: "+e); }
+})();
+</script>
+</body>
+</html>
