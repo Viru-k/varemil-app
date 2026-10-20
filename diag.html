@@ -13,17 +13,17 @@
 <script>
 var out=document.getElementById('out'); var log='';
 function p(m){ log += m + "\n"; out.textContent = log; }
-var URL="https://qcvgibzqlupaiqnczdat.supabase.co";
-var KEY="sb_publishable_uJbfw7UJsaon8V63feSRkA_4FnLwZF9";
+var SB_URL="https://qcvgibzqlupaiqnczdat.supabase.co";
+var SB_KEY="sb_publishable_uJbfw7UJsaon8V63feSRkA_4FnLwZF9";
 (async function(){
   try{
     p("1) Libreria supabase: " + ((window.supabase&&window.supabase.createClient)?"OK":"NO CARGA"));
     if(!(window.supabase&&window.supabase.createClient)){ p("--- FIN --- (la libreria no cargo)"); return; }
-    var sb = window.supabase.createClient(URL, KEY);
+    var sb = window.supabase.createClient(SB_URL, SB_KEY);
     p("2) Cliente creado: OK");
 
     try{ var t0=Date.now();
-      var r=await fetch(URL+"/auth/v1/settings",{headers:{apikey:KEY}});
+      var r=await fetch(SB_URL+"/auth/v1/settings",{headers:{apikey:SB_KEY}});
       p("3) Conexion a la nube: HTTP "+r.status+" ("+(Date.now()-t0)+" ms)");
     }catch(e){ p("3) Conexion a la nube: ERROR -> "+e); }
 
