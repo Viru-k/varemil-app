@@ -274,7 +274,15 @@
   var SUPA_KEY = "sb_publishable_uJbfw7UJsaon8V63feSRkA_4FnLwZF9";
   var CODIGO_FAMILIA = ""; // se introduce al unirse (no se guarda en el codigo publico)
 
+  if(!window.supabase || !window.supabase.createClient){
+    document.body.innerHTML = '<div style="padding:44px 24px;color:#eaedf6;background:#0f1422;min-height:100vh;font-family:system-ui,sans-serif;font-size:16px;line-height:1.5">No se pudo cargar Varemil. Suele ser por abrir sin conexión, o porque el navegador del móvil está anticuado. Cierra la app, conéctate a internet y vuelve a abrirla. Si usas el APK, actualiza <b>Android System WebView</b> y <b>Chrome</b> desde Play Store.</div>';
+    return;
+  }
   var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+  // Que ningun error se quede en silencio.
+  window.addEventListener('unhandledrejection', function(ev){ try{ var m=(ev.reason&&ev.reason.message)||ev.reason; if(m) avisoError(m); }catch(_){}} );
+  window.addEventListener('error', function(ev){ try{ if(ev.message) avisoError(ev.message); }catch(_){}} );
 
   var dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
   var diasCorto = ["L","M","X","J","V","S","D"];
@@ -299,7 +307,19 @@
   function diaKeyHoy(){ var g=new Date().getDay(); return ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"][g]; }
 
   var toastT;
-  function toast(m){ var t=el("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove("show");},2200); }
+  function toast(m){ var t=el("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove("show");},3200); }
+
+  // Muestra cualquier error de forma visible (para no quedarse "sin hacer nada").
+  function avisoError(m){
+    m = String(m||"Error desconocido");
+    try{ toast("⚠ "+m); }catch(e){}
+    var a=document.getElementById("aErr"); if(a){ a.style.color="var(--crit)"; a.textContent=m; }
+    var j=document.getElementById("jErr"); if(j){ j.textContent=m; }
+  }
+  // Corta una llamada que se quede colgada (p. ej. sin conexión).
+  function conTimeout(promesa, ms){
+    return Promise.race([ promesa, new Promise(function(_, rej){ setTimeout(function(){ rej(new Error("Sin respuesta del servidor. Revisa tu conexión o actualiza Android System WebView.")); }, ms||15000); }) ]);
+  }
 
   function icon(n){
     var s='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
@@ -399,13 +419,13 @@
       el("aGo").disabled=true; err.textContent="";
       try{
         if(modo==="registro"){
-          var r=await sb.auth.signUp({email:email,password:pass,options:{data:{nombre:nombre}}});
+          var r=await conTimeout(sb.auth.signUp({email:email,password:pass,options:{data:{nombre:nombre}}}), 15000);
           if(r.error) throw r.error;
           if(!r.data.session){ err.style.color="var(--muted)"; err.textContent="Te hemos enviado un correo. Confírmalo y vuelve a entrar."; el("aGo").disabled=false; return; }
           sessionStorage.setItem("vrm_nombre", nombre||"");
           await trasLogin();
         } else {
-          var r2=await sb.auth.signInWithPassword({email:email,password:pass});
+          var r2=await conTimeout(sb.auth.signInWithPassword({email:email,password:pass}), 15000);
           if(r2.error) throw r2.error;
           await trasLogin();
         }
@@ -419,7 +439,7 @@
       if(!cod){ err.textContent="Falta el código."; return; }
       el("jGo").disabled=true; err.textContent="";
       try{
-        var r=await sb.rpc("unirse_a_familia",{codigo:cod,nombre_padre:nombre});
+        var r=await conTimeout(sb.rpc("unirse_a_familia",{codigo:cod,nombre_padre:nombre}), 15000);
         if(r.error) throw r.error;
         await trasLogin();
       }catch(e){ err.textContent=traducir(e.message||"Error"); el("jGo").disabled=false; }
