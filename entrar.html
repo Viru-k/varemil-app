@@ -265,7 +265,7 @@
 
 <div class="auth" id="auth"><div class="loading" style="color:var(--muted)">Cargando Varemil…</div></div>
 <div class="toast" id="toast"></div>
-<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v9</div>
+<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v10</div>
 
 <script src="supabase.min.js"></script>
 <script>
@@ -822,11 +822,11 @@
 </script>
 
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}); if(window.caches&&caches.keys){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});}
-  });
-}
+// Sin service worker: quitar cualquiera que quedara y borrar cache guardada.
+try{
+  if('serviceWorker' in navigator){ navigator.serviceWorker.getRegistrations().then(function(rs){for(var i=0;i<rs.length;i++){rs[i].unregister();}}); }
+  if(window.caches&&caches.keys){ caches.keys().then(function(ks){for(var i=0;i<ks.length;i++){caches.delete(ks[i]);}}); }
+}catch(e){}
 </script>
 </body>
 </html>
