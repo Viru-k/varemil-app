@@ -271,7 +271,7 @@
 
 <div class="auth" id="auth"><div class="loading" style="color:var(--muted)">Cargando Varemil…</div></div>
 <div class="toast" id="toast"></div>
-<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v12</div>
+<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v13</div>
 
 <script src="supabase.min.js"></script>
 <script>
@@ -376,11 +376,19 @@
     else activas=catsPorNivel(nivel, edad);
     var cats={};
     CATS.forEach(function(c){ cats[c[0]] = c[2] || activas.indexOf(c[0])>=0; });
-    return { nivel:nivel, youtube: fw.youtube || (edad<12?"estricto":"moderado"), cats:cats };
+    return { nivel:nivel, youtube: fw.youtube || (edad<12?"estricto":"moderado"), cats:cats,
+             permitir:(fw.permitirExtra||[]).slice(), bloquear:(fw.bloquearExtra||[]).slice() };
   }
   function filtroAConfig(f){
     var categorias=[]; CATS.forEach(function(c){ if(f.cats[c[0]]) categorias.push(c[0]); });
-    return { nivel:f.nivel, youtube:f.youtube, categorias:categorias };
+    return { nivel:f.nivel, youtube:f.youtube, categorias:categorias, permitirExtra:f.permitir||[], bloquearExtra:f.bloquear||[] };
+  }
+  function normDom(v){ return String(v||"").trim().toLowerCase().replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,""); }
+  function listaDominios(arr, delAct){
+    if(!arr||!arr.length) return '<div style="color:var(--muted);font-size:12.5px;padding:4px 2px">(ninguna)</div>';
+    var h='';
+    arr.forEach(function(d,i){ h+='<div class="web" style="border-top:0;padding:6px 0"><div class="u">'+esc(d)+'</div><button class="tdel" data-'+delAct+'="1" data-i="'+i+'" aria-label="Quitar">✕</button></div>'; });
+    return h;
   }
 
   function child(id){ for(var i=0;i<state.children.length;i++) if(state.children[i].id===id) return state.children[i]; return state.children[0]; }
@@ -670,6 +678,7 @@
       }
       h+='</div>';
     });
+    h+='<div style="padding-top:12px"><button class="btn wide" data-act="copiarlun">Copiar el lunes a toda la semana</button></div>';
     h+='</div><div class="note">'+icon("info")+'<div>Abre o cierra cada día con el interruptor, y ajusta las horas con los selectores. Se guarda solo y llega al PC en unos minutos.</div></div>';
     return h;
   }
@@ -721,6 +730,14 @@
       +'<div class="row"><div class="txt"><div class="t">Búsqueda segura</div><div class="s">Siempre activada</div></div><button class="sw on locked" disabled></button></div>'
       +'<div class="row" style="border-top:0"><div class="txt"><div class="t">YouTube restringido</div></div></div>'
       +'<div class="seglevel" id="yt"><button data-yt="estricto" class="'+(c.filtro.youtube==="estricto"?"on":"")+'">Estricto</button><button data-yt="moderado" class="'+(c.filtro.youtube==="moderado"?"on":"")+'">Moderado</button><button data-yt="ninguno" class="'+(c.filtro.youtube==="ninguno"?"on":"")+'">Ninguno</button></div></div>';
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Webs permitidas siempre</h2>'
+      +'<div style="color:var(--muted);font-size:12.5px;margin-bottom:6px">Webs de confianza (deberes, clase).</div>'
+      +listaDominios(c.filtro.permitir,"delallow")
+      +'<div class="addrow"><input class="inp" id="allowInput" placeholder="ejemplo: classroom.google.com"><button class="btn pri" data-act="addallow">Añadir</button></div></div>';
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Webs bloqueadas (a mayores)</h2>'
+      +'<div style="color:var(--muted);font-size:12.5px;margin-bottom:6px">Webs concretas que quieres bloquear además.</div>'
+      +listaDominios(c.filtro.bloquear,"delblock")
+      +'<div class="addrow"><input class="inp" id="blockInput" placeholder="ejemplo: tiktok.com"><button class="btn pri" data-act="addblock">Añadir</button></div></div>';
     h+='<div class="note">'+icon("info")+'<div>Los cambios se guardan y llegan al PC en unos minutos. El contenido adulto se bloquea siempre, a nivel de red.</div></div>';
     return h;
   }
@@ -731,6 +748,10 @@
       +'<div class="row"><div class="avatar" style="width:38px;height:38px;border-radius:11px;font-size:15px;background:var(--accent)">'+esc((state.parent.nombre||state.parent.email||"?").charAt(0).toUpperCase())+'</div>'
       +'<div class="txt"><div class="t">'+esc(state.parent.nombre||"Padre/Madre")+'</div><div class="s">'+esc(state.parent.email)+'</div></div>'
       +'<button class="btn" data-act="logout">Salir</button></div></div>';
+
+    h+='<div class="card"><h2 class="sec" style="margin-top:0">Seguridad</h2>'
+      +'<div class="row"><div class="txt"><div class="t">Contraseña</div><div class="s">Tu acceso a la app</div></div><button class="btn" data-act="pass">Cambiar</button></div>'
+      +'<div class="row"><div class="txt"><div class="t">PIN de los PCs</div><div class="s">Para dar tiempo extra en la pantalla de bloqueo</div></div><button class="btn" data-act="pin">Cambiar</button></div></div>';
 
     h+='<div class="card"><h2 class="sec" style="margin-top:0">Invitar al otro progenitor</h2>'
       +'<div class="s" style="color:var(--muted);font-size:12.5px">Que instale la app, cree su cuenta y use este código de familia:</div>'
@@ -784,6 +805,10 @@
     if(b.hasAttribute("data-addt")){ var ca=child(state.selChild),da=b.getAttribute("data-day");
       if(!ca.horario[da]) ca.horario[da]=[]; ca.horario[da].push(["16:00","20:00"]); render(); await guardarHijo(ca); toast("Tramo añadido"); return;
     }
+    if(b.hasAttribute("data-delallow")||b.hasAttribute("data-delblock")){ var cf=child(state.selChild),ai=parseInt(b.getAttribute("data-i"),10);
+      var arr=b.hasAttribute("data-delallow")?cf.filtro.permitir:cf.filtro.bloquear;
+      if(arr) arr.splice(ai,1); render(); await guardarHijo(cf); toast("Quitada"); return;
+    }
     var act=b.getAttribute("data-act");
     if(act){
       if(act==="aprobar"){ await aprobarSolicitud(b.getAttribute("data-s"), b.getAttribute("data-d"), parseInt(b.getAttribute("data-min"),10)); return; }
@@ -796,6 +821,11 @@
       else if(act==="logout"){ await sb.auth.signOut(); location.reload(); }
       else if(act==="copiarcodigo"){ copiar(state.familiaId); }
       else if(act==="addpc"){ await vincularPC(c); }
+      else if(act==="addallow"){ var ia=el("allowInput"), da2=normDom(ia&&ia.value); if(da2){ if(c.filtro.permitir.indexOf(da2)<0) c.filtro.permitir.push(da2); render(); await guardarHijo(c); toast("Permitida: "+da2); } }
+      else if(act==="addblock"){ var ib=el("blockInput"), db2=normDom(ib&&ib.value); if(db2){ if(c.filtro.bloquear.indexOf(db2)<0) c.filtro.bloquear.push(db2); render(); await guardarHijo(c); toast("Bloqueada: "+db2); } }
+      else if(act==="copiarlun"){ var lun=(c.horario.lunes||[]); dias.forEach(function(d){ c.horario[d]=lun.map(function(t){return t.slice();}); }); render(); await guardarHijo(c); toast("Copiado a toda la semana"); }
+      else if(act==="pin"){ modalPin(); }
+      else if(act==="pass"){ modalPass(); }
       return;
     }
     if(b.hasAttribute("data-day")){ var cc=child(state.selChild),d=b.getAttribute("data-day");
@@ -823,6 +853,27 @@
       toast("Horario guardado");
     }
   });
+
+  function abrirModal(inner){ var a=el("auth"); a.innerHTML='<div class="authcard">'+inner+'</div>'; a.hidden=false; }
+  function cerrarModal(){ var a=el("auth"); a.hidden=true; a.innerHTML=''; }
+  function modalPin(){
+    abrirModal('<h1 style="font-size:20px">Cambiar PIN</h1><div class="sub">de los PCs</div>'
+      +'<label>Nuevo PIN</label><input class="inp" id="mPin" inputmode="numeric" maxlength="8" value="'+esc(state.familia.pin||"")+'">'
+      +'<button class="btn pri wide" id="mGo">Guardar</button><div class="authlink"><a id="mX">Cancelar</a></div>');
+    el("mX").onclick=cerrarModal;
+    el("mGo").onclick=async function(){ var v=el("mPin").value.trim(); if(!v) return;
+      try{ var r=await sb.from("familias").update({pin:v}).eq("id",state.familiaId); if(r.error) throw r.error; state.familia.pin=v; cerrarModal(); toast("PIN actualizado"); }
+      catch(e){ toast("No se pudo guardar"); } };
+  }
+  function modalPass(){
+    abrirModal('<h1 style="font-size:20px">Cambiar contraseña</h1><div class="sub">de tu acceso</div>'
+      +'<label>Nueva contraseña (mínimo 6)</label><input class="inp" id="mPass" type="password" autocomplete="new-password">'
+      +'<button class="btn pri wide" id="mGo2">Guardar</button><div class="authlink"><a id="mX2">Cancelar</a></div>');
+    el("mX2").onclick=cerrarModal;
+    el("mGo2").onclick=async function(){ var v=el("mPass").value; if((v||"").length<6){ toast("Mínimo 6 caracteres"); return; }
+      try{ var r=await sb.auth.updateUser({password:v}); if(r.error) throw r.error; cerrarModal(); toast("Contraseña cambiada"); }
+      catch(e){ toast(traducir(e.message||"Error")); } };
+  }
 
   async function vincularPC(c){
     try{
