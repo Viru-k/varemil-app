@@ -454,35 +454,44 @@
   }
 
   async function trasLogin(){
-    var u=(await sb.auth.getUser()).data.user;
-    if(!u){ mostrarAuth("login"); return; }
-    state.parent.email=u.email;
-    var mem=await sb.from("miembros").select("familia_id,nombre").limit(1);
-    if(mem.error || !mem.data || !mem.data.length){ mostrarAuth("join"); return; }
-    state.familiaId=mem.data[0].familia_id;
-    state.parent.nombre=mem.data[0].nombre||"";
-    ocultarAuth();
-    el("screen").innerHTML='<div class="loading">Cargando…</div>';
-    await cargarDatos();
-    render();
-    // Refresco en segundo plano (nuevas peticiones, estado de los PCs).
-    if(pollId) clearInterval(pollId);
-    pollId = setInterval(function(){
-      if(!el("auth").hidden) return;
-      cargarDatos().then(function(){ render(); }).catch(function(){});
-    }, 30000);
+    try{
+      // getSession es local (no red) -> no se cuelga.
+      var sess=(await sb.auth.getSession()).data.session;
+      var u=sess && sess.user;
+      if(!u){ avisoError("No se pudo iniciar sesion."); mostrarAuth("login"); return; }
+      state.parent.email=u.email;
+
+      var mem=await conTimeout(sb.from("miembros").select("familia_id,nombre").limit(1), 15000);
+      if(mem.error) throw mem.error;
+      if(!mem.data || !mem.data.length){ mostrarAuth("join"); return; }
+      state.familiaId=mem.data[0].familia_id;
+      state.parent.nombre=mem.data[0].nombre||"";
+
+      ocultarAuth();
+      el("screen").innerHTML='<div class="loading">Cargando…</div>';
+      await cargarDatos();
+      render();
+
+      if(pollId) clearInterval(pollId);
+      pollId = setInterval(function(){
+        if(!el("auth").hidden) return;
+        cargarDatos().then(function(){ render(); }).catch(function(){});
+      }, 30000);
+    }catch(e){
+      avisoError("No se pudieron cargar tus datos: " + (e.message||e));
+    }
   }
 
   // ====================== DATOS ======================
   async function cargarDatos(){
     try{
-      var res=await Promise.all([
+      var res=await conTimeout(Promise.all([
         sb.from("familias").select("*").eq("id",state.familiaId).single(),
         sb.from("hijos").select("*").eq("familia_id",state.familiaId).order("edad",{ascending:false}),
         sb.from("dispositivos").select("*").eq("familia_id",state.familiaId),
         sb.from("informes").select("*").eq("familia_id",state.familiaId).gte("fecha",hace(6)),
         sb.from("solicitudes").select("*").eq("familia_id",state.familiaId).eq("estado","pendiente").order("creado_at",{ascending:false})
-      ]);
+      ]), 20000);
       state.familia=res[0].data||{};
       var hijos=res[1].data||[], disps=res[2].data||[], infs=res[3].data||[], solics=res[4].data||[];
       state.children=hijos.map(function(h){
@@ -512,7 +521,7 @@
         return { id:s.id, hijo:h, dispositivo_id:s.dispositivo_id, creado_at:s.creado_at };
       });
       if(!state.selChild && state.children.length) state.selChild=state.children[0].id;
-    }catch(e){ toast("Error cargando datos"); }
+    }catch(e){ avisoError("Error cargando datos: "+(e.message||e)); throw e; }
   }
   function construirSemana(infs, hijoId){
     var map={}; infs.forEach(function(i){ if(i.hijo_id===hijoId) map[i.fecha]=i.total_min||0; });
