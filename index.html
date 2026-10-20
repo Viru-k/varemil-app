@@ -265,7 +265,7 @@
 
 <div class="auth" id="auth"><div class="loading" style="color:var(--muted)">Cargando Varemil…</div></div>
 <div class="toast" id="toast"></div>
-<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v7</div>
+<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v8</div>
 
 <script src="supabase.min.js"></script>
 <script>
@@ -462,7 +462,7 @@
       if(!u){ avisoError("No se pudo iniciar sesion."); mostrarAuth("login"); return; }
       state.parent.email=u.email;
 
-      var mem=await conTimeout(sb.from("miembros").select("familia_id,nombre").limit(1), 15000);
+      var mem=await conTimeout(sb.from("miembros").select("familia_id,nombre").limit(1), 8000);
       if(mem.error) throw mem.error;
       if(!mem.data || !mem.data.length){ mostrarAuth("join"); return; }
       state.familiaId=mem.data[0].familia_id;
@@ -479,7 +479,9 @@
         cargarDatos().then(function(){ render(); }).catch(function(){});
       }, 30000);
     }catch(e){
-      avisoError("No se pudieron cargar tus datos: " + (e.message||e));
+      avisoError("No se pudo cargar: "+(e.message||e)+". Entra de nuevo.");
+      try{ await sb.auth.signOut(); }catch(_){}
+      mostrarAuth("login");
     }
   }
 
@@ -811,11 +813,10 @@
 
   // ====================== ARRANQUE ======================
   (async function init(){
-    try{
-      var s=await sb.auth.getSession();
-      if(s.data.session){ await trasLogin(); }
-      else { mostrarAuth("login"); }
-    }catch(e){ mostrarAuth("login"); }
+    var s=null;
+    try{ s=(await conTimeout(sb.auth.getSession(),6000)).data.session; }catch(e){}
+    if(!s){ mostrarAuth("login"); return; }
+    await trasLogin();   // trasLogin se recupera solo si algo falla
   })();
 })();
 </script>
