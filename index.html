@@ -265,6 +265,7 @@
 
 <div class="auth" id="auth"><div class="loading" style="color:var(--muted)">Cargando Varemil…</div></div>
 <div class="toast" id="toast"></div>
+<div style="position:fixed;bottom:4px;right:7px;font-size:10px;color:#6b7488;z-index:999;pointer-events:none">v7</div>
 
 <script src="supabase.min.js"></script>
 <script>
@@ -734,6 +735,7 @@
   // ====================== RENDER ======================
   var screens={inicio:vInicio,horarios:vHorarios,actividad:vActividad,filtro:vFiltro,ajustes:vAjustes};
   function render(){
+   try{
     el("screen").innerHTML=screens[state.tab]();
     var n=el("nav"); [].forEach.call(n.children,function(b){ b.classList.toggle("on",b.getAttribute("data-t")===state.tab); });
     el("meBtn").textContent=(state.parent.nombre||state.parent.email||"·").charAt(0).toUpperCase();
@@ -742,6 +744,7 @@
     el("bellBadge").textContent = nped;
     var bloq=0; state.children.forEach(function(c){ if(c.acceso==="bloqueado")bloq++; });
     el("subtitle").textContent = state.children.length?(state.children.length+" "+(state.children.length>1?"hijos":"hijo")+" · "+(bloq?bloq+" bloqueado"+(bloq>1?"s":""):"todo en orden")):"";
+   }catch(e){ avisoError("Error al mostrar: "+(e.message||e)); }
   }
 
   async function refrescar(){ await cargarDatos(); render(); }
