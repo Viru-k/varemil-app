@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prueba Varemil</title>
+</head>
+<body style="background:#111;color:#eee;font:16px/1.7 sans-serif;padding:16px;margin:0">
+<h2 style="color:#9f7aea;margin:0 0 12px">Prueba Varemil</h2>
+<div id="o" style="white-space:pre-wrap;background:#1a1a2e;padding:14px;border-radius:10px;font-size:15px">Empezando...</div>
+<p style="color:#888;margin-top:14px">Haz una foto de esto y mandasela a Claude.</p>
+<script>
+var o = document.getElementById('o');
+var s = '';
+function p(m){ s += m + "\n"; o.textContent = s; }
+
+s = '';
+p("1) JavaScript: FUNCIONA");
+p("2) Navegador:");
+p("   " + navigator.userAgent);
+
+try {
+  var x = new XMLHttpRequest();
+  var t = (new Date()).getTime();
+  x.open("GET", "https://qcvgibzqlupaiqnczdat.supabase.co/auth/v1/settings", true);
+  x.setRequestHeader("apikey", "sb_publishable_uJbfw7UJsaon8V63feSRkA_4FnLwZF9");
+  x.timeout = 15000;
+  x.onreadystatechange = function(){
+    if (x.readyState === 4) {
+      p("3) Conexion a la nube: HTTP " + x.status + "  (" + ((new Date()).getTime() - t) + " ms)");
+      p("--- FIN (todo bien si pone HTTP 200) ---");
+    }
+  };
+  x.onerror = function(){ p("3) Conexion a la nube: ERROR DE RED. Tu movil NO pudo conectar con la nube."); p("--- FIN ---"); };
+  x.ontimeout = function(){ p("3) Conexion a la nube: TIEMPO AGOTADO. Sin respuesta de la nube."); p("--- FIN ---"); };
+  x.send();
+} catch (e) {
+  p("3) Error al conectar: " + e);
+  p("--- FIN ---");
+}
+</script>
+</body>
+</html>
